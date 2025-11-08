@@ -1,0 +1,53 @@
+# AscAddons - WoW 3.3.5 Addons for Ascension
+# Strategy: Whitelist only ready addons, screenshots, and releases
+
+# Ignore all by default
+/*
+
+# Allow these top-level items
+!.gitignore
+!README.md
+!LICENSE
+!.github/
+!create_release.sh
+
+# Whitelist addon directories
+!addons/
+addons/*
+!addons/MEStats/
+!addons/MEStats/**
+
+# Whitelist screenshots and releases
+!screenshots/
+!screenshots/**
+!releases/
+!releases/**
+
+# Workspace-only (keep excluded)
+archive/
+data/
+temp/
+scripts/
+tools/
+libraries/
+private/
+
+# Common junk
+*.zip
+*.bak
+*.tmp
+*.swp
+*.orig
+*.rej
+.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# IDE / editor metadata
+.vscode/
+.idea/
+*.iml
+
+# Lua dev artifacts (if any future tooling)
+luac.out

@@ -1,0 +1,9 @@
+## Interface: 30300
+## Title: ME Stats
+## Notes: Track and display mystic enchant collection statistics
+## Author: 5tuartw
+## Version: 1.0.0
+## SavedVariables: MEStatsDB
+
+Core.lua
+UI.lua
