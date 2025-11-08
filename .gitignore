@@ -9,7 +9,6 @@
 !README.md
 !LICENSE
 !.github/
-!create_release.sh
 
 # Whitelist addon directories
 !addons/
