@@ -4,6 +4,8 @@ A WoW addon for Ascension that helps you manage and summon frequently used vanit
 
 ![Ascension Vanity Helper Demo](../../screenshots/AVH_Deliver_Open_Cleanup.gif)
 
+[Download](https://github.com/5tuartw/AscAddons/releases)
+
 ## Features
 
 - **15 Built-in Heirloom Sets** - Pre-configured sets for all heirloom armor, weapons, relics, and accessories
