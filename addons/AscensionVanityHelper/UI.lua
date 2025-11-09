@@ -49,30 +49,18 @@ function AVH:CreateMainWindow()
     UIDropDownMenu_Initialize(setDropdown, function(self, level)
         local info = UIDropDownMenu_CreateInfo()
         
-        -- Add "Starter Kit" (default)
-        info.text = "Starter Kit"
-        info.func = function()
-            AVH.db.currentSet = "Starter Kit"
-            UIDropDownMenu_SetText(setDropdown, "Starter Kit")
-            AVH:RefreshItemList()
-        end
-        info.checked = (AVH.db.currentSet == "Starter Kit")
-        UIDropDownMenu_AddButton(info)
-        
         -- Add all available sets (user + built-in)
         local allSets = AVH:GetAllAvailableSets()
         for _, setName in ipairs(allSets) do
-            if setName ~= (AVH.db.currentSet or "Starter Kit") then
-                info = UIDropDownMenu_CreateInfo()
-                info.text = setName
-                info.func = function()
-                    AVH.db.currentSet = setName
-                    UIDropDownMenu_SetText(setDropdown, setName)
-                    AVH:RefreshItemList()
-                end
-                info.checked = false
-                UIDropDownMenu_AddButton(info)
+            info = UIDropDownMenu_CreateInfo()
+            info.text = setName
+            info.func = function()
+                AVH.db.currentSet = setName
+                UIDropDownMenu_SetText(setDropdown, setName)
+                AVH:RefreshItemList()
             end
+            info.checked = (AVH.db.currentSet == setName)
+            UIDropDownMenu_AddButton(info)
         end
         
         -- Separator

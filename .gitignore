@@ -32,9 +32,9 @@ scripts/
 tools/
 libraries/
 private/
+docs/
 
 # Common junk
-*.zip
 *.bak
 *.tmp
 *.swp

@@ -5,6 +5,7 @@
 | Addon | Description | Download |
 |-------|-------------|----------|
 | **ME Stats** | Track your Mystic Enchant collection progress | [Latest Release](https://github.com/5tuartw/AscAddons/releases/latest) |
+| **Ascension Vanity Helper** | Manage and summon vanity collection items with 15 built-in heirloom sets | [Latest Release](https://github.com/5tuartw/AscAddons/releases/latest) |
 
 ---
 

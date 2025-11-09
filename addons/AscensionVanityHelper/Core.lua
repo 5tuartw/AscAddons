@@ -107,12 +107,10 @@ function AVH:GetAllAvailableSets()
         "Heirloom - Misc",
     }
     
-    -- Add built-in sets in order if enabled
-    if AVH.db.showBuiltinSets then
-        for _, setName in ipairs(builtinOrder) do
-            if AVH_BUILTIN_SETS[setName] and AVH.db.visibleBuiltinSets[setName] then
-                table.insert(sets, setName)
-            end
+    -- Add built-in sets in order based on individual visibility settings
+    for _, setName in ipairs(builtinOrder) do
+        if AVH_BUILTIN_SETS[setName] and AVH.db.visibleBuiltinSets[setName] then
+            table.insert(sets, setName)
         end
     end
     
@@ -861,23 +859,38 @@ function AVH:CreateInterfaceOptions()
     local individualChecks = {}
     
     masterToggle:SetScript("OnShow", function(self)
-        self:SetChecked(AVH.db.showBuiltinSets)
+        -- Master is checked only if ALL individual sets are checked
+        local allChecked = true
+        for setName, _ in pairs(AVH.db.visibleBuiltinSets) do
+            if not AVH.db.visibleBuiltinSets[setName] then
+                allChecked = false
+                break
+            end
+        end
+        self:SetChecked(allChecked)
     end)
     
     masterToggle:SetScript("OnClick", function(self)
         local isChecked = self:GetChecked()
-        AVH.db.showBuiltinSets = isChecked
         
-        -- When checking master, check all individual sets
-        if isChecked then
-            for _, check in ipairs(individualChecks) do
-                AVH.db.visibleBuiltinSets[check.setName] = true
-                check:SetChecked(true)
+        -- Check or uncheck all individual sets
+        for _, check in ipairs(individualChecks) do
+            AVH.db.visibleBuiltinSets[check.setName] = isChecked
+            check:SetChecked(isChecked)
+        end
+        
+        -- If unchecking all and current set is a built-in, reset to default
+        if not isChecked and AVH.mainFrame then
+            local currentSet = AVH.db.currentSet or "New Character Set"
+            if AVH_BUILTIN_SETS[currentSet] then
+                AVH.db.currentSet = "New Character Set"
+                UIDropDownMenu_SetText(AVH.mainFrame.setDropdown, "New Character Set")
             end
         end
         
         -- Refresh dropdown if window is open
         if AVH.mainFrame and AVH.mainFrame:IsVisible() then
+            AVH:RefreshSetDropdown()
             AVH:RefreshItemList()
         end
     end)
@@ -900,27 +913,24 @@ function AVH:CreateInterfaceOptions()
         "Heirloom - Misc",
     }
     
-    local col1Anchor = masterToggle
-    local col2Anchor = masterToggle
     local colWidth = 250
+    local rowHeight = -25
+    local indent = 20
     
     for i, setName in ipairs(builtinSets) do
         local check = CreateFrame("CheckButton", "AVH_SetCheck_" .. i, panel, "UICheckButtonTemplate")
         check:SetSize(20, 20)
         
+        -- Calculate row (0-6 for both columns)
+        local row = ((i - 1) % 7)
+        
         -- Alternate between columns (7 items per column)
         if i <= 7 then
             -- Left column
-            check:SetPoint("TOPLEFT", col1Anchor, "BOTTOMLEFT", 20, -5)
-            col1Anchor = check
+            check:SetPoint("TOPLEFT", masterToggle, "BOTTOMLEFT", indent, (row * rowHeight) - 5)
         else
             -- Right column
-            if i == 8 then
-                check:SetPoint("TOPLEFT", masterToggle, "BOTTOMLEFT", 20 + colWidth, -5)
-            else
-                check:SetPoint("TOPLEFT", col2Anchor, "BOTTOMLEFT", 0, -5)
-            end
-            col2Anchor = check
+            check:SetPoint("TOPLEFT", masterToggle, "BOTTOMLEFT", indent + colWidth, (row * rowHeight) - 5)
         end
         
         local label = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
@@ -936,14 +946,19 @@ function AVH:CreateInterfaceOptions()
             local isChecked = self:GetChecked()
             AVH.db.visibleBuiltinSets[self.setName] = isChecked
             
-            -- If unchecking an individual set while master is checked, uncheck master
-            if not isChecked and AVH.db.showBuiltinSets then
-                AVH.db.showBuiltinSets = false
-                masterToggle:SetChecked(false)
+            -- Update master toggle: check if ALL individual sets are checked
+            local allChecked = true
+            for setName, _ in pairs(AVH.db.visibleBuiltinSets) do
+                if not AVH.db.visibleBuiltinSets[setName] then
+                    allChecked = false
+                    break
+                end
             end
+            masterToggle:SetChecked(allChecked)
             
             -- Refresh dropdown if window is open
             if AVH.mainFrame and AVH.mainFrame:IsVisible() then
+                AVH:RefreshSetDropdown()
                 AVH:RefreshItemList()
             end
         end)
