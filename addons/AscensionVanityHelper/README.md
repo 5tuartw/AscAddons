@@ -50,7 +50,7 @@ A WoW addon for Ascension that helps you manage and summon frequently used vanit
 
 ## Installation
 
-1. Download the latest release ZIP from [Releases](https://github.com/5tuartw/WowAddons/releases)
+1. Download the latest release ZIP from [Releases](https://github.com/5tuartw/AscAddons/releases)
 2. Extract the `AscensionVanityHelper` folder to:
    - `World of Warcraft/Interface/AddOns/`
 3. Restart WoW or `/reload` if already in-game
