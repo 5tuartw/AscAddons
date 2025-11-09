@@ -6,6 +6,8 @@ Develops addons for Ascension WoW (custom 3.3.5 WotLK server) with two active ad
 **Active Addons:**
 - `WarcraftRebornCollector/` - Player-facing map pin collector for worldforged items (standalone, no HandyNotes dependency)
 - `WRC_DevTools/` - In-game item scanning toolkit for data enrichment
+- `addons/MEStats/` - Mystic Enchant collection progress tracker
+- `addons/AscensionVanityHelper/` - Vanity collection item management with 15 built-in heirloom sets
 
 **Reference Materials:**
 - `archive/addons/related-rpg-addons/` - Working 3.3.5 addons showing Ascension API patterns (HandyNotes-based implementations)
@@ -23,6 +25,18 @@ Develops addons for Ascension WoW (custom 3.3.5 WotLK server) with two active ad
 - **No C_Container** - Use `GetContainerNumSlots()`, `GetContainerItemLink()` directly
 - **Lua 5.1** - No bitwise operators (`&`, `|`), use `bit.band()`, `bit.bor()` library or manual math
 - **Async item loading** - `GetItemInfo(itemID)` may return nil initially; implement retry loops with OnUpdate timers (see `Scanner:RequestItem`)
+
+**Ascension Custom APIs:**
+- **C_VanityCollection** - Custom Ascension API for vanity collection system
+  - `C_VanityCollection.IsCollectionItemOwned(itemID)` - Check if item is in player's collection
+  - `C_VanityCollection.SummonCollectionItem(itemID)` - Summon item from collection to bags
+  - No client-side cooldown tracking; use `GetItemCooldown(itemID)` for cooldown state
+- **GetItemInfo() extended returns** - Returns 22 values in 3.3.5 (retail has more)
+  - Index 22 is `itemIsUnique` boolean flag for "Unique" items
+  - Use for conditional logic: unique items should only be summoned once
+- **Secure item usage** - Use `SecureActionButtonTemplate` with `type="item"` attribute for opening/using items
+  - Prevents taint when executing protected actions
+  - Set `SetAttribute("item", itemName)` to bind to specific item
 
 **Working Patterns in Codebase:**
 ```lua
@@ -51,7 +65,113 @@ end)
 -- Zone ID mapping (Core.lua WRC.zoneNames)
 local c, z = GetCurrentMapContinent(), GetCurrentMapZone()
 local zoneName = WRC.zoneNames[c][z]
+
+-- Ascension Vanity Collection (AscensionVanityHelper)
+if C_VanityCollection.IsCollectionItemOwned(itemID) then
+    C_VanityCollection.SummonCollectionItem(itemID)
+end
+
+-- Check if item is unique (GetItemInfo index 22)
+local name, link, quality, _, _, _, _, _, _, texture, _, _, _, _, _, _, _, _, _, _, _, itemIsUnique = GetItemInfo(itemID)
+if itemIsUnique then
+    -- Only summon once if not in bags/equipped
+end
+
+-- SecureActionButton for item usage (avoid taint)
+local btn = CreateFrame("Button", "UniqueName", parent, "SecureActionButtonTemplate")
+btn:SetAttribute("type", "item")
+btn:SetAttribute("item", itemName)  -- Use item name, not ID
+-- PostClick for refresh after action
+btn:SetScript("PostClick", function() C_Timer.After(0.3, RefreshUI) end)
+
+-- Bag scanning with quantity count
+for bag = 0, 4 do
+    for slot = 1, GetContainerNumSlots(bag) do
+        local itemLink = GetContainerItemLink(bag, slot)
+        local _, count = GetContainerItemInfo(bag, slot)
+        if itemLink then
+            local foundID = tonumber(itemLink:match("item:(%d+)"))
+            if foundID == targetID then
+                totalCount = totalCount + count
+            end
+        end
+    end
+end
 ```
+
+---
+
+## UI Patterns & Best Practices (from AscensionVanityHelper)
+
+**Dropdown Menus (UIDropDownMenu):**
+- Initialize with `UIDropDownMenu_Initialize(dropdown, function(self, level) ... end)`
+- Always show ALL available options in dropdown, use `info.checked` for current selection
+- Avoid filtering out the current selection - users expect to see it with a checkmark
+- Call `UIDropDownMenu_SetText()` to update displayed text
+- Reinitialize dropdown when underlying data changes: `UIDropDownMenu_Initialize(dropdown, dropdown.initialize)`
+
+**Checkbox Layouts:**
+- For multi-column grids, calculate row position: `row = ((i - 1) % itemsPerColumn)`
+- Use direct anchoring to parent: `SetPoint("TOPLEFT", parent, "BOTTOMLEFT", xOffset, (row * rowHeight) - padding)`
+- Avoid cascading anchors (item1 → item2 → item3) as it causes cumulative positioning errors
+- Store checkbox references in arrays for programmatic updates
+
+**Master/Individual Toggle Pattern:**
+```lua
+-- Master checkbox: checks/unchecks all individual items
+masterToggle:SetScript("OnClick", function(self)
+    local isChecked = self:GetChecked()
+    for _, check in ipairs(individualChecks) do
+        db.settings[check.id] = isChecked
+        check:SetChecked(isChecked)
+    end
+end)
+
+-- Individual checkboxes: update master to reflect "all checked" state
+individualCheck:SetScript("OnClick", function(self)
+    db.settings[self.id] = self:GetChecked()
+    
+    -- Update master: checked only if ALL individuals are checked
+    local allChecked = true
+    for id, _ in pairs(db.settings) do
+        if not db.settings[id] then
+            allChecked = false
+            break
+        end
+    end
+    masterToggle:SetChecked(allChecked)
+end)
+```
+
+**Item Status Display:**
+- Use `GetContainerItemInfo(bag, slot)` to get item count (second return value)
+- Display quantities for stacks: `"In bags (3)"` when count > 1
+- Check `GetItemCooldown(itemID)` returns `startTime, duration` - calculate remaining: `duration - (GetTime() - startTime)`
+- Item uniqueness from `GetItemInfo()` index 22: only restrict actions if `itemIsUnique AND (inBags OR equipped)`
+
+**Secure Buttons for Item Actions:**
+- Use `SecureActionButtonTemplate` to avoid taint on protected actions
+- Set `SetAttribute("type", "item")` and `SetAttribute("item", itemName)` (name, not ID)
+- Use `PostClick` handler for UI refresh (runs after secure action completes)
+- Never call protected functions from insecure code paths
+
+**Throttled Sequential Actions:**
+```lua
+-- Batch processing with delays (e.g., summoning multiple items)
+local function processNext()
+    index = index + 1
+    if index > #queue then return end
+    
+    ProcessItem(queue[index])
+    C_Timer.After(2, processNext)  -- 2-second delay between actions
+end
+processNext()
+```
+
+**ScrollFrame Management:**
+- Set scroll child height dynamically based on content: `content:SetHeight(totalHeight)`
+- Use negative yOffsets for top-to-bottom stacking: `yOffset = yOffset - itemHeight - padding`
+- Hide/show item buttons instead of destroying: reuse button frames for performance
 
 ---
 
