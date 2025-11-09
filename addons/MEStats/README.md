@@ -17,6 +17,8 @@ Track your Mystic Enchant collection progress across all quality tiers and class
 </tr>
 </table>
 
+[Download](https://github.com/5tuartw/AscAddons/releases)
+
 ## Features
 
 - **Minimap Button**: Quick access to your statistics panel
@@ -41,7 +43,7 @@ Track your Mystic Enchant collection progress across all quality tiers and class
 
 ## Installation
 
-Download from [Releases](../../../releases/latest) or manually copy the `MEStats` folder to:
+Download the latest release ZIP from [Releases](https://github.com/5tuartw/AscAddons/releases) and copy the `MEStats` folder to:
 ```
 <Ascension Install>/Interface/AddOns/MEStats/
 ```

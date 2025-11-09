@@ -2,9 +2,9 @@
 
 A WoW addon for Ascension that helps you manage and summon frequently used vanity collection items across multiple characters.
 
-![Ascension Vanity Helper Demo](../../screenshots/AVH_Deliver_Open_Cleanup.gif)
-
 [Download](https://github.com/5tuartw/AscAddons/releases)
+
+![Ascension Vanity Helper Demo](../../screenshots/AVH_Deliver_Open_Cleanup.gif)
 
 ## Features
 
@@ -45,6 +45,9 @@ A WoW addon for Ascension that helps you manage and summon frequently used vanit
 - **PvP Weapons** - PvP-focused weapons (5 items)
 - **Relics** - Druid idols, Paladin librams, Shaman totems (6 items)
 - **Misc** - Rings, necklaces, trinkets (11 items)
+
+(Gif below sped up x3)
+![Ascension Vanity Helper Demo](../../screenshots/AVH_Deliver_Set.gif)
 
 **Total: 115 items across all built-in sets**
 
