@@ -1,0 +1,44 @@
+name: Release AscensionVanityHelper
+
+on:
+  push:
+    tags:
+      - 'avh-v*'
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/avh-v}" >> $GITHUB_OUTPUT
+      
+    - name: Create release package
+      run: |
+        mkdir -p release
+        cp -r AscensionVanityHelper release/
+        cd release
+        zip -r AscensionVanityHelper-v${{ steps.get_version.outputs.VERSION }}.zip AscensionVanityHelper
+        
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: release/AscensionVanityHelper-v${{ steps.get_version.outputs.VERSION }}.zip
+        body: |
+          ## Ascension Vanity Helper v${{ steps.get_version.outputs.VERSION }}
+          
+          Download and extract to your `World of Warcraft/Interface/AddOns/` folder.
+          
+          ### Installation
+          1. Download `AscensionVanityHelper-v${{ steps.get_version.outputs.VERSION }}.zip`
+          2. Extract to `World of Warcraft/Interface/AddOns/`
+          3. Restart WoW or `/reload` in-game
+          4. Type `/avh` to open the addon
+          
+          See [README.md](https://github.com/${{ github.repository }}/blob/main/AscensionVanityHelper/README.md) for full documentation.
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

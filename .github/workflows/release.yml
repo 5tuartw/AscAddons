@@ -1,0 +1,37 @@
+name: Build Addon Zips
+
+on:
+  push:
+    branches: [ main, master ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write   # needed to create a release
+      actions: read
+      packages: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up zip
+        run: sudo apt-get update && sudo apt-get install -y zip
+      - name: Package addons
+        run: |
+          chmod +x scripts/package_addons.sh
+          ./scripts/package_addons.sh dist
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: addon-zips
+          path: dist/*.zip
+      - name: Create release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+            files: dist/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # If this still fails with permissions, ensure the workflow has write permission in repo settings

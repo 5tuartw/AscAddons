@@ -1,0 +1,12 @@
+## Interface: 30300
+## Title: Ascension Vanity Helper
+## Notes: Streamlines summoning vanity collection items with customizable sets
+## Author: 5tuartw
+## Version: 0.1.0
+## SavedVariables: AscensionVanityHelperDB
+## X-Category: Miscellaneous
+
+Data.lua
+Core.lua
+UI.lua
+Cleanup.lua

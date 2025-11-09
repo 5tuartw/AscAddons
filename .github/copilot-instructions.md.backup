@@ -1,0 +1,30 @@
+## Repo Scope
+- Maintains Ascension WoW addons: `WarcraftRebornCollector/` (player-facing collector) and `WRC_DevTools/` (in-game scanning toolkit). Legacy HandyNotes assets stay in `archive/` for reference only.
+
+## WarcraftRebornCollector
+- Core loop lives in `WarcraftRebornCollector/Core.lua`; it loads globals (`WRC_DATA`, `WRC_STATS`) from `Data.lua`, manages SavedVariables `WRC_DB`, and owns world/minimap pin lifecycles.
+- `Core.lua` handles collection state (`WRC:MarkCollected`, `:HidePin`) and map hooks; keep logic stateless outside `WRC_DB` so reloads do not break persistence.
+- `Map.lua` supplies the minimap renderer and Astrolabe-inspired yard math (`WorldMapSize`, `ComputeDistance`). When adding zones you must update both `WRC.zoneNames` (Core) and `WorldMapSize` (Map).
+- Tooltips / click behavior funnel through `WRC:ShowTooltip` and `WRC:OnPinClick`; preserve modifier checks (Shift for debug text) and call `:RefreshPins()` after state changes.
+
+## Data Pipeline
+- Source of truth is `data/final/wrc_final_dataset.json` plus stats inside its metadata; never hand-edit `WarcraftRebornCollector/Data.lua` (~350 KB) directly.
+- Typical flow: curate JSON with scripts like `merge_final_dataset.py` → regenerate Lua via `convert_json_to_lua.py [input_json] WarcraftRebornCollector/Data.lua` → redeploy addon.
+- Supporting CLI utilities live at repo root (`compare_and_clean_data.py`, `parse_scan_results.py`) and under `tools/`; they assume Python 3 and relative paths from repo root.
+- Large CSV/HTML diffs appear in `temp/`; treat as scratch outputs that can be regenerated, not long-lived assets.
+
+## WRC_DevTools
+- `WRC_DevTools/Core.lua` registers `/wrcdev` commands (e.g., `scan`, `scanlist`, `progress`) and persists state in `WRC_DevToolsDB`.
+- `WRC_DevTools/Scanner.lua` throttles item scans (`SCAN_DELAY=0.2`), builds an invisible tooltip to parse armor/weapon types, and captures red-text custom stats; respect that timer cadence when extending queue handling.
+- Export helpers (`:ExportResults`, SavedVariables dumps) feed back into the data pipeline; ensure new fields remain serializable (basic Lua scalars only).
+
+## Deployment & Verification
+- Fast iteration path: run VS Code task **Deploy Addons to Ascension** (`Ctrl+Shift+B`) or call `./scripts/deploy_addons.sh` from repo root; it overwrites `D:/.../Interface/AddOns/<addon>` via WSL.
+- After deployment reload the Ascension client (`/reload`) and verify with `/wrcdev help` (DevTools) or map pins (Collector). SavedVariables live under the game install and are not packaged by the script.
+- For dataset changes rerun `convert_json_to_lua.py`, redeploy, then spot-check pin placement in-game; debug logging toggles via `WRC_DB.settings.debugMode`.
+
+## Coding Conventions & Gotchas
+- Lua files expect Blizzard 3.3.5 APIs—avoid retail-only calls and reuse existing helper patterns (`WRC:GetPinFrame`, pooling tables) to prevent frame leaks.
+- Maintain ASCII output in data generators; Python scripts escape strings through `escape_lua_string` to keep Lua syntax valid.
+- Respect object pools for pins/minimap pins; do not `CreateFrame` in hot loops without reusing `self.pinPool` / `self.minimapPinPool` entries.
+- When expanding datasets, keep IDs stable (`item.id` / `item.itemID`) so collection history in `WRC_DB.collected` stays aligned across updates.

@@ -15,6 +15,8 @@
 addons/*
 !addons/MEStats/
 !addons/MEStats/**
+!addons/AscensionVanityHelper/
+!addons/AscensionVanityHelper/**
 
 # Whitelist screenshots and releases
 !screenshots/
