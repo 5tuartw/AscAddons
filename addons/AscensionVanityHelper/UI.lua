@@ -1,6 +1,9 @@
 -- Ascension Vanity Helper - UI
 -- Main window and interface
 
+-- Use internal namespace
+local addonName, AVH = ...
+
 -- Create the main window
 function AVH:CreateMainWindow()
     -- Main frame

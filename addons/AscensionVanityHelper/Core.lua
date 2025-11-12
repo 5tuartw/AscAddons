@@ -1,8 +1,8 @@
 -- Ascension Vanity Helper - Core
 -- Main addon initialization and functionality
 
--- Create addon namespace
-AVH = {}
+-- Use internal namespace provided by WoW
+local addonName, AVH = ...
 AVH.version = "0.1.0"
 
 -- Frame for event handling
@@ -687,7 +687,7 @@ function AVH:CreateMinimapButton()
     local icon = button:CreateTexture(nil, "BACKGROUND")
     icon:SetSize(20, 20)
     icon:SetPoint("CENTER", 0, 1)
-    icon:SetTexture("Interface\\Icons\\INV_Misc_Bag_10_Green")
+    icon:SetTexture("Interface\\Icons\\INV_Misc_Bag_10")
     button.icon = icon
     
     -- Border

@@ -1,6 +1,9 @@
 -- Ascension Vanity Helper - Data
 -- Item definitions for vanity collection items
 
+-- Use internal namespace
+local addonName, AVH = ...
+
 -- Built-in item sets (can be toggled in options)
 AVH_BUILTIN_SETS = {
     ["Starter Kit"] = {

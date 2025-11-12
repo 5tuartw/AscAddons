@@ -1,5 +1,8 @@
 -- Cleanup Helper for deleting collected vanity items
 
+-- Use internal namespace
+local addonName, AVH = ...
+
 -- ========================================
 -- Vanity Item Cleanup Helper Window
 -- ========================================

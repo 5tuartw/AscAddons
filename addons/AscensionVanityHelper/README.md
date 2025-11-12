@@ -47,6 +47,7 @@ A WoW addon for Ascension that helps you manage and summon frequently used vanit
 - **Misc** - Rings, necklaces, trinkets (11 items)
 
 (Gif below sped up x3)
+
 ![Ascension Vanity Helper Demo](../../screenshots/AVH_Deliver_Set.gif)
 
 **Total: 115 items across all built-in sets**
