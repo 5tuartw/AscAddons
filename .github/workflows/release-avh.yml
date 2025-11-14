@@ -21,6 +21,9 @@ jobs:
       run: |
         mkdir -p release
         cp -r AscensionVanityHelper release/
+        # Remove dev files
+        find release/AscensionVanityHelper -name "*.md" ! -name "README.md" -delete
+        find release/AscensionVanityHelper -name "RELEASE_*" -delete
         cd release
         zip -r AscensionVanityHelper-v${{ steps.get_version.outputs.VERSION }}.zip AscensionVanityHelper
         
