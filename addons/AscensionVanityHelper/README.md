@@ -5,13 +5,13 @@ A WoW addon for Ascension (3.3.5 WotLK) that helps you manage and summon vanity 
 ## Screenshots
 
 ### Quick Summon All Items in a Set
-![Deliver Set Demo](../screenshots/AVH_Deliver_Set.gif)
+![Deliver Set Demo](../../screenshots/AVH_Deliver_Set.gif)
 
 ### Open Containers & Cleanup Items
-![Deliver, Open, and Cleanup Demo](../screenshots/AVH_Deliver_Open_Cleanup.gif)
+![Deliver, Open, and Cleanup Demo](../../screenshots/AVH_Deliver_Open_Cleanup.gif)
 
 ### Heirloom Set Example
-![Heirloom Set](../screenshots/AVH_Heirloom_Set.png)
+![Heirloom Set](../../screenshots/AVH_Heirloom_Set.png)
 
 ## Features
 
@@ -219,5 +219,6 @@ Create custom sets for different purposes:
 /avh create PvP Gear
 /avh add <pvp item id>
 ```
+
 
 **Note:** Custom sets are saved in SavedVariables and persist across sessions.
