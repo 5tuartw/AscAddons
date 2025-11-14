@@ -3,7 +3,11 @@ name: Build Addon Zips
 on:
   push:
     branches: [ main, master ]
-    tags: [ 'v*' ]
+    tags: 
+      - 'v*'
+      - '!avh-v*'
+      - '!mestats-v*'
+      - '!wrc-v*'
   workflow_dispatch:
 
 jobs:
