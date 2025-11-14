@@ -1,9 +1,6 @@
 -- Ascension Vanity Helper - UI
 -- Main window and interface
 
--- Use internal namespace
-local addonName, AVH = ...
-
 -- Create the main window
 function AVH:CreateMainWindow()
     -- Main frame
@@ -46,24 +43,36 @@ function AVH:CreateMainWindow()
     local setDropdown = CreateFrame("Frame", "AVH_SetDropdown", frame, "UIDropDownMenuTemplate")
     setDropdown:SetPoint("TOP", title, "BOTTOM", 0, -5)
     UIDropDownMenu_SetWidth(setDropdown, 200)
-    UIDropDownMenu_SetText(setDropdown, AVH.db.currentSet or "Starter Kit")
+    UIDropDownMenu_SetText(setDropdown, AVH.db.currentSet or "New Character Set")
     
     -- Dropdown initialize function
     UIDropDownMenu_Initialize(setDropdown, function(self, level)
         local info = UIDropDownMenu_CreateInfo()
         
+        -- Add "New Character Set" (default)
+        info.text = "New Character Set"
+        info.func = function()
+            AVH.db.currentSet = "New Character Set"
+            UIDropDownMenu_SetText(setDropdown, "New Character Set")
+            AVH:RefreshItemList()
+        end
+        info.checked = (AVH.db.currentSet == "New Character Set")
+        UIDropDownMenu_AddButton(info)
+        
         -- Add all available sets (user + built-in)
         local allSets = AVH:GetAllAvailableSets()
         for _, setName in ipairs(allSets) do
-            info = UIDropDownMenu_CreateInfo()
-            info.text = setName
-            info.func = function()
-                AVH.db.currentSet = setName
-                UIDropDownMenu_SetText(setDropdown, setName)
-                AVH:RefreshItemList()
+            if setName ~= (AVH.db.currentSet or "New Character") then
+                info = UIDropDownMenu_CreateInfo()
+                info.text = setName
+                info.func = function()
+                    AVH.db.currentSet = setName
+                    UIDropDownMenu_SetText(setDropdown, setName)
+                    AVH:RefreshItemList()
+                end
+                info.checked = false
+                UIDropDownMenu_AddButton(info)
             end
-            info.checked = (AVH.db.currentSet == setName)
-            UIDropDownMenu_AddButton(info)
         end
         
         -- Separator
@@ -82,7 +91,7 @@ function AVH:CreateMainWindow()
         UIDropDownMenu_AddButton(info)
         
         -- Delete current set option (if not default)
-        if AVH.db.currentSet and AVH.db.currentSet ~= "Starter Kit" then
+        if AVH.db.currentSet and AVH.db.currentSet ~= "New Character Set" then
             info = UIDropDownMenu_CreateInfo()
             info.text = "|cffff0000Delete Current Set|r"
             info.func = function()
@@ -203,7 +212,7 @@ end
 function AVH:RefreshSetDropdown()
     if not AVH.mainFrame or not AVH.mainFrame.setDropdown then return end
     
-    local currentSet = AVH.db.currentSet or "Starter Kit"
+    local currentSet = AVH.db.currentSet or "New Character Set"
     UIDropDownMenu_SetText(AVH.mainFrame.setDropdown, currentSet)
     UIDropDownMenu_Initialize(AVH.mainFrame.setDropdown, AVH.mainFrame.setDropdown.initialize)
 end
@@ -494,9 +503,9 @@ function AVH:UpdateItemButton(btn, itemData)
     end
     
     -- Show/hide remove button (only for custom items or custom sets)
-    local currentSet = AVH.db.currentSet or "Starter Kit"
+    local currentSet = AVH.db.currentSet or "New Character Set"
     local isCustomItem = itemData.category == "Custom"
-    local isCustomSet = currentSet ~= "Starter Kit"
+    local isCustomSet = currentSet ~= "New Character Set"
     local showRemove = (isCustomItem or isCustomSet) and AVH.db.itemSets[currentSet] and #AVH.db.itemSets[currentSet] > 0
     if showRemove and btn.removeButton then
         btn.removeButton:Show()
@@ -510,12 +519,7 @@ function AVH:UpdateItemButton(btn, itemData)
         btn:Disable()
         btn:SetAlpha(0.5)
     elseif hasInBags then
-        local _, _, _, bagCount = AVH:HasItemInBags(itemData.itemID)
-        if bagCount and bagCount > 1 then
-            btn.statusText:SetText("|cff00ffffIn bags (" .. bagCount .. ")|r")
-        else
-            btn.statusText:SetText("|cff00ffffIn bags|r")
-        end
+        btn.statusText:SetText("|cff00ffffIn bags|r")
         btn:Enable()
         btn:SetAlpha(1.0)
     elseif isEquipped then

@@ -1,8 +1,8 @@
 -- Ascension Vanity Helper - Core
 -- Main addon initialization and functionality
 
--- Use internal namespace provided by WoW
-local addonName, AVH = ...
+-- Create addon namespace
+AVH = {}
 AVH.version = "0.1.0"
 
 -- Frame for event handling
@@ -15,7 +15,7 @@ frame:RegisterEvent("BAG_UPDATE")
 local defaultDB = {
     windowPosition = nil,
     autoShowOnLogin = false,
-    currentSet = "Starter Kit",
+    currentSet = "New Character",
     itemSets = {},  -- User custom sets
     minimapButton = {
         hide = false,
@@ -25,12 +25,12 @@ local defaultDB = {
     warchestHelperEnabled = true,
     showBuiltinSets = true,  -- Master toggle for all built-in sets
     visibleBuiltinSets = {   -- Per-set visibility toggles
-        ["Starter Kit"] = true,
+        ["New Character"] = true,
         ["Heirloom - Cloth Int+Hit"] = true,
         ["Heirloom - Leather Agility"] = true,
         ["Heirloom - Leather Int+Spi"] = true,
-        ["Heirloom - Leather Agi+Int"] = true,
-        ["Heirloom - Leather Int+Mp5"] = true,
+        ["Heirloom - Mail Agi+Int"] = true,
+        ["Heirloom - Mail Int+Mp5"] = true,
         ["Heirloom - Mail Strength"] = true,
         ["Heirloom - Mail Defense"] = true,
         ["Heirloom - PvP Armor"] = true,
@@ -53,6 +53,31 @@ frame:SetScript("OnEvent", function(self, event, arg1)
     end
 end)
 
+-- Migrate renamed built-in sets in SavedVariables
+function AVH:MigrateBuiltinSetNames()
+    if not AVH.db.visibleBuiltinSets then
+        return
+    end
+    
+    -- Define set name migrations (old name -> new name)
+    local migrations = {
+        ["Heirloom - Leather Agi+Int"] = "Heirloom - Mail Agi+Int",
+        ["Heirloom - Leather Int+Mp5"] = "Heirloom - Mail Int+Mp5",
+    }
+    
+    -- Migrate visibility settings from old names to new names
+    for oldName, newName in pairs(migrations) do
+        if AVH.db.visibleBuiltinSets[oldName] ~= nil then
+            -- Copy visibility setting to new name (only if new name doesn't exist)
+            if AVH.db.visibleBuiltinSets[newName] == nil then
+                AVH.db.visibleBuiltinSets[newName] = AVH.db.visibleBuiltinSets[oldName]
+            end
+            -- Remove old name entry
+            AVH.db.visibleBuiltinSets[oldName] = nil
+        end
+    end
+end
+
 -- Initialize addon
 function AVH:OnInitialize()
     -- Initialize SavedVariables
@@ -68,6 +93,9 @@ function AVH:OnInitialize()
     end
     
     AVH.db = AscensionVanityHelperDB
+    
+    -- Migrate any renamed built-in sets (preserves user visibility preferences)
+    AVH:MigrateBuiltinSetNames()
     
     -- All built-in set names are now hardcoded in Data.lua (no need to populate)
     
@@ -91,12 +119,12 @@ function AVH:GetAllAvailableSets()
     
     -- Define the order for built-in sets
     local builtinOrder = {
-        "Starter Kit",
+        "New Character",
         "Heirloom - Cloth Int+Hit",
         "Heirloom - Leather Agility",
         "Heirloom - Leather Int+Spi",
-        "Heirloom - Leather Agi+Int",
-        "Heirloom - Leather Int+Mp5",
+        "Heirloom - Mail Agi+Int",
+        "Heirloom - Mail Int+Mp5",
         "Heirloom - Mail Strength",
         "Heirloom - Mail Defense",
         "Heirloom - PvP Armor",
@@ -107,10 +135,12 @@ function AVH:GetAllAvailableSets()
         "Heirloom - Misc",
     }
     
-    -- Add built-in sets in order based on individual visibility settings
-    for _, setName in ipairs(builtinOrder) do
-        if AVH_BUILTIN_SETS[setName] and AVH.db.visibleBuiltinSets[setName] then
-            table.insert(sets, setName)
+    -- Add built-in sets in order if enabled
+    if AVH.db.showBuiltinSets then
+        for _, setName in ipairs(builtinOrder) do
+            if AVH_BUILTIN_SETS[setName] and AVH.db.visibleBuiltinSets[setName] then
+                table.insert(sets, setName)
+            end
         end
     end
     
@@ -245,30 +275,18 @@ function AVH:ToggleWindow()
     end
 end
 
--- Check if player has item in bags (returns found, bag, slot, count)
+-- Check if player has item in bags
 function AVH:HasItemInBags(itemID)
-    local totalCount = 0
-    local firstBag, firstSlot = nil, nil
-    
     for bag = 0, 4 do
         for slot = 1, GetContainerNumSlots(bag) do
             local item = GetContainerItemLink(bag, slot)
             if item then
                 local found, _, id = item:find('^|c%x+|Hitem:(%d+):.+')
                 if found and tonumber(id) == itemID then
-                    local _, count = GetContainerItemInfo(bag, slot)
-                    totalCount = totalCount + (count or 1)
-                    if not firstBag then
-                        firstBag = bag
-                        firstSlot = slot
-                    end
+                    return true, bag, slot
                 end
             end
         end
-    end
-    
-    if totalCount > 0 then
-        return true, firstBag, firstSlot, totalCount
     end
     return false
 end
@@ -370,19 +388,21 @@ function AVH:SummonItem(itemID, itemName)
         return false
     end
     
-    -- Get item info to check if unique
-    local _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, itemIsUnique = GetItemInfo(itemID)
+    -- Check if item is unique
+    local isUnique = AVH:IsItemUnique(itemID)
     
-    -- Only check equipped/bags status for unique items
-    if itemIsUnique then
-        local isEquipped = AVH:HasItemEquipped(itemID)
-        local hasInBags = AVH:HasItemInBags(itemID)
-        
-        if isEquipped then
-            DEFAULT_CHAT_FRAME:AddMessage("|cff00ffff[AVH]|r " .. (itemName or "Item") .. " is already equipped (Unique).")
+    -- Only check bags if item is unique (non-unique items can have multiple copies)
+    if isUnique then
+        local hasItem = AVH:HasItemInBags(itemID)
+        if hasItem then
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00ffff[AVH]|r " .. (itemName or "Item") .. " is already in your bags (unique item).")
             return false
-        elseif hasInBags then
-            DEFAULT_CHAT_FRAME:AddMessage("|cff00ffff[AVH]|r " .. (itemName or "Item") .. " is already in your bags (Unique).")
+        end
+        
+        -- Check if item is equipped (for unique items)
+        local isEquipped = AVH:HasItemEquipped(itemID)
+        if isEquipped then
+            DEFAULT_CHAT_FRAME:AddMessage("|cff00ffff[AVH]|r " .. (itemName or "Item") .. " is already equipped (unique item).")
             return false
         end
     end
@@ -403,7 +423,7 @@ end
 
 -- Summon all items from the list
 function AVH:SummonAll()
-    local currentSet = AVH.db.currentSet or "Starter Kit"
+    local currentSet = AVH.db.currentSet or "New Character"
     local items = AVH:GetItemsForSet(currentSet)
     
     -- Queue items to summon
@@ -471,13 +491,13 @@ function AVH:AddItemToSet(input)
     end
     
     -- Get current set
-    local currentSet = AVH.db.currentSet or "Starter Kit"
+    local currentSet = AVH.db.currentSet or "New Character Set"
     
     -- Initialize set if it doesn't exist - copy from defaults if it's the default set
     if not AVH.db.itemSets[currentSet] then
         AVH.db.itemSets[currentSet] = {}
         -- If this is the default set, copy the base items first
-        if currentSet == "Starter Kit" then
+        if currentSet == "New Character Set" then
             for _, item in ipairs(AVH_ITEMS) do
                 table.insert(AVH.db.itemSets[currentSet], {
                     itemID = item.itemID,
@@ -487,7 +507,7 @@ function AVH:AddItemToSet(input)
                 })
             end
         end
-    elseif currentSet == "Starter Kit" and #AVH.db.itemSets[currentSet] == 0 then
+    elseif currentSet == "New Character Set" and #AVH.db.itemSets[currentSet] == 0 then
         -- If the default set exists but is empty, copy base items
         for _, item in ipairs(AVH_ITEMS) do
             table.insert(AVH.db.itemSets[currentSet], {
@@ -538,7 +558,7 @@ function AVH:RemoveItemFromSet(input)
     end
     
     -- Get current set
-    local currentSet = AVH.db.currentSet or "Starter Kit"
+    local currentSet = AVH.db.currentSet or "New Character Set"
     
     -- Check if set exists in DB
     if not AVH.db.itemSets[currentSet] or #AVH.db.itemSets[currentSet] == 0 then
@@ -606,7 +626,7 @@ function AVH:DeleteSet(setName)
     end
     
     -- Protect default set from deletion
-    if setName == "Starter Kit" then
+    if setName == "New Character Set" then
         DEFAULT_CHAT_FRAME:AddMessage("|cffff0000[AVH]|r Cannot delete the default set. Use /avh reset to restore it to defaults.")
         return false
     end
@@ -620,7 +640,7 @@ function AVH:DeleteSet(setName)
     
     -- If deleting current set, switch to default
     if AVH.db.currentSet == setName then
-        AVH.db.currentSet = "Starter Kit"
+        AVH.db.currentSet = "New Character Set"
     end
     
     DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00[AVH]|r Deleted set '" .. setName .. "'.")
@@ -636,9 +656,9 @@ end
 
 -- Reset current set to defaults
 function AVH:ResetCurrentSet()
-    local currentSet = AVH.db.currentSet or "Starter Kit"
+    local currentSet = AVH.db.currentSet or "New Character Set"
     
-    if currentSet == "Starter Kit" then
+    if currentSet == "New Character Set" then
         -- Reset to default items
         AVH.db.itemSets[currentSet] = {}
         for _, item in ipairs(AVH_ITEMS) do
@@ -666,7 +686,7 @@ end
 
 -- Get current set items
 function AVH:GetCurrentSetItems()
-    local currentSet = AVH.db.currentSet or "Starter Kit"
+    local currentSet = AVH.db.currentSet or "New Character"
     return AVH:GetItemsForSet(currentSet)
 end
 
@@ -675,6 +695,12 @@ end
 -- ========================================
 
 function AVH:CreateMinimapButton()
+    -- Recreate button if version changed (forces icon update)
+    if _G["AVH_MinimapButton"] then
+        _G["AVH_MinimapButton"]:Hide()
+        _G["AVH_MinimapButton"] = nil
+    end
+    
     local button = CreateFrame("Button", "AVH_MinimapButton", Minimap)
     button:SetFrameStrata("MEDIUM")
     button:SetSize(31, 31)
@@ -687,7 +713,7 @@ function AVH:CreateMinimapButton()
     local icon = button:CreateTexture(nil, "BACKGROUND")
     icon:SetSize(20, 20)
     icon:SetPoint("CENTER", 0, 1)
-    icon:SetTexture("Interface\\Icons\\INV_Misc_Bag_10")
+    icon:SetTexture("Interface\\Icons\\INV_Chest_Awakening")
     button.icon = icon
     
     -- Border
@@ -859,50 +885,35 @@ function AVH:CreateInterfaceOptions()
     local individualChecks = {}
     
     masterToggle:SetScript("OnShow", function(self)
-        -- Master is checked only if ALL individual sets are checked
-        local allChecked = true
-        for setName, _ in pairs(AVH.db.visibleBuiltinSets) do
-            if not AVH.db.visibleBuiltinSets[setName] then
-                allChecked = false
-                break
-            end
-        end
-        self:SetChecked(allChecked)
+        self:SetChecked(AVH.db.showBuiltinSets)
     end)
     
     masterToggle:SetScript("OnClick", function(self)
         local isChecked = self:GetChecked()
+        AVH.db.showBuiltinSets = isChecked
         
-        -- Check or uncheck all individual sets
-        for _, check in ipairs(individualChecks) do
-            AVH.db.visibleBuiltinSets[check.setName] = isChecked
-            check:SetChecked(isChecked)
-        end
-        
-        -- If unchecking all and current set is a built-in, reset to default
-        if not isChecked and AVH.mainFrame then
-            local currentSet = AVH.db.currentSet or "New Character Set"
-            if AVH_BUILTIN_SETS[currentSet] then
-                AVH.db.currentSet = "New Character Set"
-                UIDropDownMenu_SetText(AVH.mainFrame.setDropdown, "New Character Set")
+        -- When checking master, check all individual sets
+        if isChecked then
+            for _, check in ipairs(individualChecks) do
+                AVH.db.visibleBuiltinSets[check.setName] = true
+                check:SetChecked(true)
             end
         end
         
         -- Refresh dropdown if window is open
         if AVH.mainFrame and AVH.mainFrame:IsVisible() then
-            AVH:RefreshSetDropdown()
             AVH:RefreshItemList()
         end
     end)
     
     -- Individual set checkboxes in 2 columns
     local builtinSets = {
-        "Starter Kit",
+        "New Character",
         "Heirloom - Cloth Int+Hit",
         "Heirloom - Leather Agility",
         "Heirloom - Leather Int+Spi",
-        "Heirloom - Leather Agi+Int",
-        "Heirloom - Leather Int+Mp5",
+        "Heirloom - Mail Agi+Int",
+        "Heirloom - Mail Int+Mp5",
         "Heirloom - Mail Strength",
         "Heirloom - Mail Defense",
         "Heirloom - PvP Armor",
@@ -946,19 +957,14 @@ function AVH:CreateInterfaceOptions()
             local isChecked = self:GetChecked()
             AVH.db.visibleBuiltinSets[self.setName] = isChecked
             
-            -- Update master toggle: check if ALL individual sets are checked
-            local allChecked = true
-            for setName, _ in pairs(AVH.db.visibleBuiltinSets) do
-                if not AVH.db.visibleBuiltinSets[setName] then
-                    allChecked = false
-                    break
-                end
+            -- If unchecking an individual set while master is checked, uncheck master
+            if not isChecked and AVH.db.showBuiltinSets then
+                AVH.db.showBuiltinSets = false
+                masterToggle:SetChecked(false)
             end
-            masterToggle:SetChecked(allChecked)
             
             -- Refresh dropdown if window is open
             if AVH.mainFrame and AVH.mainFrame:IsVisible() then
-                AVH:RefreshSetDropdown()
                 AVH:RefreshItemList()
             end
         end)

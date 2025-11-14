@@ -1,8 +1,5 @@
 -- Cleanup Helper for deleting collected vanity items
 
--- Use internal namespace
-local addonName, AVH = ...
-
 -- ========================================
 -- Vanity Item Cleanup Helper Window
 -- ========================================
@@ -157,6 +154,33 @@ function AVH:CreateCleanupItemButton(parent, itemID, bag, slot, index, customToo
     return btn
 end
 
+-- Check if itemID exists in any built-in or custom set
+function AVH:IsItemInAnySets(itemID)
+    -- Check built-in sets
+    if AVH_BUILTIN_SETS then
+        for setName, items in pairs(AVH_BUILTIN_SETS) do
+            for _, item in ipairs(items) do
+                if item.itemID == itemID then
+                    return true
+                end
+            end
+        end
+    end
+    
+    -- Check user custom sets
+    if AVH.db and AVH.db.itemSets then
+        for setName, items in pairs(AVH.db.itemSets) do
+            for _, item in ipairs(items) do
+                if item.itemID == itemID then
+                    return true
+                end
+            end
+        end
+    end
+    
+    return false
+end
+
 function AVH:ShowCleanupHelper()
     if not AVH.cleanupHelper then
         AVH:CreateCleanupHelper()
@@ -190,7 +214,7 @@ function AVH:ScanForCleanup()
                     local shouldShow = false
                     local customTooltip = nil
                     
-                    -- Check if it's a special cleanup item (always show, even if not collected)
+                    -- Check if it's a special cleanup item (container contents, etc.)
                     if AVH_CLEANUP_SPECIAL and AVH_CLEANUP_SPECIAL[itemID] then
                         -- Only show in bags, not equipped
                         local isEquipped = AVH:HasItemEquipped(itemID)
@@ -198,10 +222,11 @@ function AVH:ScanForCleanup()
                             shouldShow = true
                             customTooltip = AVH_CLEANUP_SPECIAL[itemID].tooltipWarning
                         end
-                    else
-                        -- Check if it's a collected vanity item
-                        local isKnown = AVH:IsVanityItemKnown(itemID, bag, slot)
-                        if isKnown then
+                    -- Check if it's in any set (built-in or custom)
+                    elseif AVH:IsItemInAnySets(itemID) then
+                        -- Only show in bags, not equipped
+                        local isEquipped = AVH:HasItemEquipped(itemID)
+                        if not isEquipped then
                             shouldShow = true
                         end
                     end

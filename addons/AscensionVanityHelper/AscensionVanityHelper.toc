@@ -2,7 +2,7 @@
 ## Title: Ascension Vanity Helper
 ## Notes: Streamlines summoning vanity collection items with customizable sets
 ## Author: 5tuartw
-## Version: 0.1.0
+## Version: 1.0.1
 ## SavedVariables: AscensionVanityHelperDB
 ## X-Category: Miscellaneous
 

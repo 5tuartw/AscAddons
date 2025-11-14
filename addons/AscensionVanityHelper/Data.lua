@@ -1,12 +1,9 @@
 -- Ascension Vanity Helper - Data
 -- Item definitions for vanity collection items
 
--- Use internal namespace
-local addonName, AVH = ...
-
 -- Built-in item sets (can be toggled in options)
 AVH_BUILTIN_SETS = {
-    ["Starter Kit"] = {
+    ["New Character"] = {
         {
             itemID = 657112,
             name = "Fel Enchanted Warchest",
@@ -80,7 +77,7 @@ AVH_BUILTIN_SETS = {
         { itemID = 1642984, name = "Preened Ironfeather Shoulders", category = "Heirloom" }
     },
     
-    ["Heirloom - Leather Agi+Int"] = {
+    ["Heirloom - Mail Agi+Int"] = {
         { itemID = 1339096, name = "Champion Herod's Belt", category = "Heirloom" },
         { itemID = 1339103, name = "Champion Herod's Boots", category = "Heirloom" },
         { itemID = 1339110, name = "Champion Herod's Bracers", category = "Heirloom" },
@@ -92,7 +89,7 @@ AVH_BUILTIN_SETS = {
         { itemID = 1339084, name = "Champion's Deathdealer Cloak", category = "Heirloom" }
     },
     
-    ["Heirloom - Leather Int+Mp5"] = {
+    ["Heirloom - Mail Int+Mp5"] = {
         { itemID = 1339095, name = "Mystical Belt of Elements", category = "Heirloom" },
         { itemID = 1339102, name = "Mystical Boots of Elements", category = "Heirloom" },
         { itemID = 1339109, name = "Mystical Bracers of Elements", category = "Heirloom" },
@@ -193,6 +190,7 @@ AVH_BUILTIN_SETS = {
     
     ["Heirloom - Misc"] = {
         { itemID = 1642992, name = "Discerning Eye of the Beast", category = "Heirloom" },
+        { itemID = 1642991, name = "Swift Hand of Justice", category = "Heirloom" },
         { itemID = 339076, name = "Pendant of Adventure", category = "Heirloom" },
         { itemID = 339100, name = "Pendant of Discovery", category = "Heirloom" },
         { itemID = 1339078, name = "Pendant of the Bulwark", category = "Heirloom" },
@@ -207,7 +205,7 @@ AVH_BUILTIN_SETS = {
 }
 
 -- Legacy: Default items (kept for backwards compatibility, points to New Character set)
-AVH_ITEMS = AVH_BUILTIN_SETS["Starter Kit"]
+AVH_ITEMS = AVH_BUILTIN_SETS["New Character"]
 
 -- Categories for organization
 AVH_CATEGORIES = {
