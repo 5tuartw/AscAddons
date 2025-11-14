@@ -78,6 +78,78 @@ function AVH:MigrateBuiltinSetNames()
     end
 end
 
+-- Repair custom overrides of built-in sets (restore missing built-in items)
+function AVH:RepairBuiltinSetOverrides()
+    if not AVH.db.itemSets then
+        return
+    end
+    
+    -- Check each custom set to see if it's an override of a built-in set
+    for setName, customItems in pairs(AVH.db.itemSets) do
+        if AVH_BUILTIN_SETS[setName] then
+            -- This is a custom override of a built-in set
+            -- Check if it's missing any built-in items
+            local builtinItems = AVH_BUILTIN_SETS[setName]
+            local needsRepair = false
+            
+            -- Build a map of existing item IDs in the custom set
+            local existingIDs = {}
+            for _, item in ipairs(customItems) do
+                existingIDs[item.itemID] = true
+            end
+            
+            -- Check if any built-in items are missing
+            for _, builtinItem in ipairs(builtinItems) do
+                if not existingIDs[builtinItem.itemID] then
+                    needsRepair = true
+                    break
+                end
+            end
+            
+            -- If repair is needed, rebuild the set with all built-in items + custom additions
+            if needsRepair then
+                local repairedSet = {}
+                
+                -- First, add all built-in items
+                for _, builtinItem in ipairs(builtinItems) do
+                    table.insert(repairedSet, {
+                        itemID = builtinItem.itemID,
+                        name = builtinItem.name,
+                        category = builtinItem.category,
+                        isOpenable = builtinItem.isOpenable
+                    })
+                end
+                
+                -- Then add any custom items that aren't in the built-in set
+                for _, customItem in ipairs(customItems) do
+                    if not existingIDs[customItem.itemID] or existingIDs[customItem.itemID] == nil then
+                        -- This is a custom addition, keep it
+                        local isDuplicate = false
+                        for _, builtinItem in ipairs(builtinItems) do
+                            if builtinItem.itemID == customItem.itemID then
+                                isDuplicate = true
+                                break
+                            end
+                        end
+                        if not isDuplicate then
+                            table.insert(repairedSet, {
+                                itemID = customItem.itemID,
+                                name = customItem.name,
+                                category = customItem.category or "Custom",
+                                isOpenable = customItem.isOpenable
+                            })
+                        end
+                    end
+                end
+                
+                -- Replace the broken set with the repaired one
+                AVH.db.itemSets[setName] = repairedSet
+                DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00[AVH]|r Repaired set '" .. setName .. "' (restored missing built-in items)")
+            end
+        end
+    end
+end
+
 -- Initialize addon
 function AVH:OnInitialize()
     -- Initialize SavedVariables
@@ -96,6 +168,9 @@ function AVH:OnInitialize()
     
     -- Migrate any renamed built-in sets (preserves user visibility preferences)
     AVH:MigrateBuiltinSetNames()
+    
+    -- Repair any broken custom overrides of built-in sets
+    AVH:RepairBuiltinSetOverrides()
     
     -- All built-in set names are now hardcoded in Data.lua (no need to populate)
     
@@ -491,14 +566,15 @@ function AVH:AddItemToSet(input)
     end
     
     -- Get current set
-    local currentSet = AVH.db.currentSet or "New Character Set"
+    local currentSet = AVH.db.currentSet or "New Character"
     
-    -- Initialize set if it doesn't exist - copy from defaults if it's the default set
+    -- Initialize set if it doesn't exist
     if not AVH.db.itemSets[currentSet] then
         AVH.db.itemSets[currentSet] = {}
-        -- If this is the default set, copy the base items first
-        if currentSet == "New Character Set" then
-            for _, item in ipairs(AVH_ITEMS) do
+        
+        -- If this is a built-in set, copy all built-in items first
+        if AVH_BUILTIN_SETS[currentSet] then
+            for _, item in ipairs(AVH_BUILTIN_SETS[currentSet]) do
                 table.insert(AVH.db.itemSets[currentSet], {
                     itemID = item.itemID,
                     name = item.name,
@@ -506,16 +582,6 @@ function AVH:AddItemToSet(input)
                     isOpenable = item.isOpenable
                 })
             end
-        end
-    elseif currentSet == "New Character Set" and #AVH.db.itemSets[currentSet] == 0 then
-        -- If the default set exists but is empty, copy base items
-        for _, item in ipairs(AVH_ITEMS) do
-            table.insert(AVH.db.itemSets[currentSet], {
-                itemID = item.itemID,
-                name = item.name,
-                category = item.category,
-                isOpenable = item.isOpenable
-            })
         end
     end
     

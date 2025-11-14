@@ -166,6 +166,9 @@ MIT License - See [LICENSE](../LICENSE) for details.
 
 ## Changelog
 
+### v1.0.3 (2025-11-14)
+- Fixed loss of items when adding to a pre-built set
+
 ### v1.0.2 (2025-11-14)
 - Renamed Hunter/Shaman sets to Mail
 - Added Swift Hand of Justice to Heirloom - Misc
