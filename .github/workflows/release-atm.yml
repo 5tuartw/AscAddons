@@ -1,0 +1,55 @@
+name: Release Ascension Trinket Manager
+
+on:
+  push:
+    tags:
+      - 'atm-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/atm-v}" >> $GITHUB_OUTPUT
+
+      - name: Package addon
+        run: |
+          mkdir -p release
+          cp -r addons/AscensionTrinketManager release/
+          cd release
+          zip -r AscensionTrinketManager-${{ steps.version.outputs.VERSION }}.zip AscensionTrinketManager/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/AscensionTrinketManager-${{ steps.version.outputs.VERSION }}.zip
+          name: Ascension Trinket Manager v${{ steps.version.outputs.VERSION }}
+          body: |
+            # Ascension Trinket Manager v${{ steps.version.outputs.VERSION }}
+            
+            Lightweight trinket management addon with auto-mount speed feature.
+            
+            ## Installation
+            1. Download `AscensionTrinketManager-${{ steps.version.outputs.VERSION }}.zip`
+            2. Extract to `World of Warcraft/Interface/AddOns/`
+            3. Restart WoW or type `/reload`
+            4. Type `/atm` to configure
+            
+            ## Features
+            - Clickable trinket buttons with visual cooldowns
+            - Auto-equip Stick on a Carrot when mounting
+            - Right-click trinket swap menu
+            - Alt+click manual carrot swap
+            - Configurable layout, scale, and expand direction
+            - Zone restrictions for auto-carrot (instances/BGs)
+            
+            See [README](https://github.com/5tuartw/AscAddons/blob/main/addons/AscensionTrinketManager/README.md) for full documentation.
+          draft: false
+          prerelease: false

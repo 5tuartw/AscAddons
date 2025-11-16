@@ -17,6 +17,8 @@ addons/*
 !addons/MEStats/**
 !addons/AscensionVanityHelper/
 !addons/AscensionVanityHelper/**
+!addons/AscensionTrinketManager/
+!addons/AscensionTrinketManager/**
 
 # Whitelist screenshots and releases
 !screenshots/
