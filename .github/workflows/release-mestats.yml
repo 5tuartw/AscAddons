@@ -1,0 +1,55 @@
+name: Release MEStats
+
+on:
+  push:
+    tags:
+      - 'mestats-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/mestats-v}" >> $GITHUB_OUTPUT
+
+      - name: Package addon
+        run: |
+          mkdir -p release
+          cp -r MEStats release/
+          cd release
+          zip -r MEStats-${{ steps.version.outputs.VERSION }}.zip MEStats/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/MEStats-${{ steps.version.outputs.VERSION }}.zip
+          name: MEStats v${{ steps.version.outputs.VERSION }}
+          body: |
+            # MEStats v${{ steps.version.outputs.VERSION }}
+            
+            Track your Mystic Enchant collection progress with detailed statistics.
+            
+            ## Installation
+            1. Download `MEStats-${{ steps.version.outputs.VERSION }}.zip`
+            2. Extract to `World of Warcraft/Interface/AddOns/`
+            3. Restart WoW or type `/reload`
+            4. Click the minimap icon or type `/mestats` to view stats
+            
+            ## Features
+            - Visual collection tracker for all Mystic Enchants
+            - Statistics by class, armor type, weapon type, and overall
+            - At-a-glance stats on minimap tooltip (All classes + current class)
+            - Color-coded completion percentages
+            - Dual display modes: percentages or absolute counts
+            - Minimap button for quick access
+            
+            See [README](https://github.com/5tuartw/WowAddons/blob/main/MEStats/README.md) for full documentation.
+          draft: false
+          prerelease: false

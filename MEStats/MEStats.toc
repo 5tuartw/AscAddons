@@ -2,7 +2,7 @@
 ## Title: ME Stats
 ## Notes: Track and display mystic enchant collection statistics
 ## Author: 5tuartw
-## Version: 1.0.0
+## Version: 1.0.2
 ## SavedVariables: MEStatsDB
 
 Core.lua

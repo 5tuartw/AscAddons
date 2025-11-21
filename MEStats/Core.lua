@@ -103,6 +103,37 @@ function ME:CreateMinimapButton()
     button:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_LEFT")
         GameTooltip:SetText("ME Stats", 1, 1, 1)
+        
+        -- Add current stats if available
+        if ME.snapshot and ME.snapshot.byClass then
+            local _, playerClass = UnitClass("player")
+            
+            -- All classes stats
+            local allStats = ME.snapshot.byClass["ALL"]
+            if allStats and allStats.total > 0 then
+                local pct = (allStats.known / allStats.total) * 100
+                local r, g, b = ME:ColorForPercent(pct)
+                GameTooltip:AddLine(string.format("All: %d/%d (%.0f%%)", 
+                    allStats.known, allStats.total, pct), r, g, b)
+            end
+            
+            -- Current class stats
+            if playerClass and ME.snapshot.byClass[playerClass] then
+                local classStats = ME.snapshot.byClass[playerClass]
+                if classStats.total > 0 then
+                    local pct = (classStats.known / classStats.total) * 100
+                    local r, g, b = ME:ColorForPercent(pct)
+                    local className = (_G.LOCALIZED_CLASS_NAMES_MALE and _G.LOCALIZED_CLASS_NAMES_MALE[playerClass])
+                                   or (_G.LOCALIZED_CLASS_NAMES_FEMALE and _G.LOCALIZED_CLASS_NAMES_FEMALE[playerClass])
+                                   or playerClass
+                    GameTooltip:AddLine(string.format("%s: %d/%d (%.0f%%)", 
+                        className, classStats.known, classStats.total, pct), r, g, b)
+                end
+            end
+            
+            GameTooltip:AddLine(" ")  -- Blank line separator
+        end
+        
         GameTooltip:AddLine("Left-click: Toggle statistics panel", 0.8, 0.8, 0.8)
         GameTooltip:AddLine("Drag: Move this button", 0.8, 0.8, 0.8)
         GameTooltip:Show()

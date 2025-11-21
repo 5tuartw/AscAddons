@@ -22,7 +22,7 @@ jobs:
       - name: Package addon
         run: |
           mkdir -p release
-          cp -r addons/AscensionTrinketManager release/
+          cp -r AscensionTrinketManager release/
           cd release
           zip -r AscensionTrinketManager-${{ steps.version.outputs.VERSION }}.zip AscensionTrinketManager/
 
@@ -50,6 +50,6 @@ jobs:
             - Configurable layout, scale, and expand direction
             - Zone restrictions for auto-carrot (instances/BGs)
             
-            See [README](https://github.com/5tuartw/AscAddons/blob/main/addons/AscensionTrinketManager/README.md) for full documentation.
+            See [README](https://github.com/5tuartw/WowAddons/blob/main/AscensionTrinketManager/README.md) for full documentation.
           draft: false
           prerelease: false

@@ -22,7 +22,7 @@ jobs:
     - name: Create release package
       run: |
         mkdir -p release
-        cp -r addons/AscensionVanityHelper release/AscensionVanityHelper
+        cp -r AscensionVanityHelper release/AscensionVanityHelper
         # Remove dev files
         find release/AscensionVanityHelper -name "*.md" ! -name "README.md" -delete
         find release/AscensionVanityHelper -name "RELEASE_*" -delete

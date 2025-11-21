@@ -10,15 +10,13 @@
 !LICENSE
 !.github/
 
-# Whitelist addon directories
-!addons/
-addons/*
-!addons/MEStats/
-!addons/MEStats/**
-!addons/AscensionVanityHelper/
-!addons/AscensionVanityHelper/**
-!addons/AscensionTrinketManager/
-!addons/AscensionTrinketManager/**
+# Whitelist development addon directories (workspace root)
+!MEStats/
+!MEStats/**
+!AscensionVanityHelper/
+!AscensionVanityHelper/**
+!AscensionTrinketManager/
+!AscensionTrinketManager/**
 
 # Whitelist screenshots and releases
 !screenshots/
