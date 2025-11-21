@@ -189,6 +189,7 @@ eventFrame:SetScript("OnEvent", function(self, event, arg1)
     if event == "ADDON_LOADED" and arg1 == addonName then
         ME:OnLoad()
     elseif event == "PLAYER_LOGIN" then
-        -- Could do additional initialization here
+        -- Load enchant data for minimap tooltip
+        ME:RefreshMysticData()
     end
 end)
