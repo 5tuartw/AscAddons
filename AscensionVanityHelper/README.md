@@ -5,13 +5,13 @@ A WoW addon for Ascension (3.3.5 WotLK) that helps you manage and summon vanity 
 ## Screenshots
 
 ### Quick Summon All Items in a Set
-![Deliver Set Demo](../../screenshots/AVH_Deliver_Set.gif)
+![Deliver Set Demo](../screenshots/AVH_Deliver_Set.gif)
 
 ### Open Containers & Cleanup Items
-![Deliver, Open, and Cleanup Demo](../../screenshots/AVH_Deliver_Open_Cleanup.gif)
+![Deliver, Open, and Cleanup Demo](../screenshots/AVH_Deliver_Open_Cleanup.gif)
 
 ### Heirloom Set Example
-![Heirloom Set](../../screenshots/AVH_Heirloom_Set.png)
+![Heirloom Set](../screenshots/AVH_Heirloom_Set.png)
 
 ## Features
 
@@ -57,7 +57,7 @@ A WoW addon for Ascension (3.3.5 WotLK) that helps you manage and summon vanity 
 
 ## Installation
 
-1. Download the latest release ZIP from [Releases](https://github.com/5tuartw/WowAddons/releases)
+1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=avh&expanded=true)
 2. Extract the `AscensionVanityHelper` folder to:
    - **Windows**: `World of Warcraft/Interface/AddOns/`
    - **WSL/Linux**: `~/.wine/drive_c/Program Files/World of Warcraft/Interface/AddOns/`
