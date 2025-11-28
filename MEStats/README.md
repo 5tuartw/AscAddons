@@ -8,8 +8,6 @@ Track your Mystic Enchant collection progress for Ascension WoW with detailed st
 - **Detailed Statistics**: View progress by:
   - Overall collection
   - Class specialization
-  - Armor types (Cloth, Leather, Mail, Plate)
-  - Weapon types (1H Sword, 2H Axe, Staff, etc.)
 - **Minimap Tooltip**: At-a-glance stats showing All classes and your current class
 - **Display Modes**: Toggle between percentages and absolute counts
 - **Color-Coded Progress**: Easy-to-read color scheme for completion percentages
@@ -89,3 +87,4 @@ Created by 5tuartw for the Ascension WoW community.
 ## License
 
 See LICENSE file for details.
+
