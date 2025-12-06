@@ -6,33 +6,6 @@ Collection of quality-of-life addons for Ascension WoW (3.3.5 WotLK).
 
 ## 📦 Available Addons
 
-### [AutoCollect](AutoCollect)
-One-click transmog collection with smart filtering and visual indicators.
-
-![AutoCollect Options](screenshots/AC_options.png)
-![AutoCollect Tooltip](screenshots/AC_tooltip.jpg)
-
-- Icon overlays on quest rewards and loot window
-- Bind protection to prevent accidental BoE binding based on rarity
-- Icon or text mode with live appearance counter
-
-**[Download Latest](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)
-
----
-
-### [QuestKeys](QuestKeys)
-Fast quest and gossip dialogue interaction with keyboard shortcuts - no more clicking through dialogs.
-
-![QuestKeys](screenshots/QK_dialogue.png)
-
-- Spacebar to accept/complete quests automatically
-- Number keys (1-9) for gossip options and quest rewards
-- Visual key hints showing available shortcuts
-
-**[Download Latest](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)
-
----
-
 ### [ME Stats](MEStats)
 Track your Mystic Enchant collection progress with detailed statistics.
 
@@ -72,6 +45,33 @@ Clickable trinket buttons with auto-equip mount speed feature.
 - Configurable layout and positioning
 
 **[Download Latest](https://github.com/5tuartw/AscAddons/releases?q=atm&expanded=true)** · [All Releases](https://github.com/5tuartw/AscAddons/releases?q=atm&expanded=true)
+
+---
+
+### [AutoCollect](AutoCollect)
+One-click transmog collection with smart filtering and visual indicators, inspired by [AutoCollectAppearance](https://github.com/Ashi-Ryu/AutoCollectAppearance) by Ashi-Ryu.
+
+![AutoCollect Options](screenshots/AC_options.png)
+![AutoCollect Tooltip](screenshots/AC_tooltip.jpg)
+
+- Icon overlays on quest rewards and loot window
+- Bind protection to prevent accidental BoE binding based on rarity
+- Icon or text mode with live appearance counter
+
+**[Download Latest](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)
+
+---
+
+### [QuestKeys](QuestKeys)
+Fast quest and gossip dialogue interaction with keyboard shortcuts - no more clicking through dialogs.
+
+<img src="screenshots/QK_dialogue.png" width="692">
+
+- Spacebar to accept/complete quests automatically
+- Number keys (1-9) for gossip options and quest rewards
+- Visual key hints showing available shortcuts
+
+**[Download Latest](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)
 
 ---
 
