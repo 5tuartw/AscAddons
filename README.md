@@ -9,24 +9,27 @@ Collection of quality-of-life addons for Ascension WoW (3.3.5 WotLK).
 ### [AutoCollect](AutoCollect)
 One-click transmog collection with smart filtering and visual indicators.
 
-- Rarity-based collection filters (Poor through Epic+)
-- Green checkmark overlays on quest rewards and loot rolls
-- Bind protection to prevent accidental BoE binding
+![AutoCollect Options](screenshots/AC_options.png)
+![AutoCollect Tooltip](screenshots/AC_tooltip.jpg)
+
+- Icon overlays on quest rewards and loot window
+- Bind protection to prevent accidental BoE binding based on rarity
 - Icon or text mode with live appearance counter
 
-**[Download Latest](https://github.com/5tuartw/WowAddons/releases/download/autocollect-v1.0/AutoCollect-1.0.zip)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)
+**[Download Latest](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)
 
 ---
 
 ### [QuestKeys](QuestKeys)
-Fast questing with keyboard shortcuts - no more clicking through dialogs.
+Fast quest and gossip dialogue interaction with keyboard shortcuts - no more clicking through dialogs.
+
+![QuestKeys](screenshots/QK_dialogue.png)
 
 - Spacebar to accept/complete quests automatically
 - Number keys (1-9) for gossip options and quest rewards
 - Visual key hints showing available shortcuts
-- ESC to decline quests
 
-**[Download Latest](https://github.com/5tuartw/WowAddons/releases/download/questkeys-v1.0/QuestKeys-1.0.zip)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)
+**[Download Latest](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)
 
 ---
 
