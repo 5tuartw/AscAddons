@@ -14,7 +14,7 @@ One-click transmog collection with smart filtering and visual indicators.
 - Bind protection to prevent accidental BoE binding
 - Icon or text mode with live appearance counter
 
-**[Download Latest](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)
+**[Download Latest](https://github.com/5tuartw/WowAddons/releases/download/autocollect-v1.0/AutoCollect-1.0.zip)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)
 
 ---
 
@@ -26,7 +26,7 @@ Fast questing with keyboard shortcuts - no more clicking through dialogs.
 - Visual key hints showing available shortcuts
 - ESC to decline quests
 
-**[Download Latest](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)
+**[Download Latest](https://github.com/5tuartw/WowAddons/releases/download/questkeys-v1.0/QuestKeys-1.0.zip)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)
 
 ---
 
