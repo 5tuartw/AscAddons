@@ -15,7 +15,7 @@ Track your Mystic Enchant collection progress for Ascension WoW with detailed st
 
 ## Installation
 
-1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=mestats&expanded=true)
+1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=mestats&expanded=true) (click the zip file in the **Assets** section)
 2. Extract to `World of Warcraft/Interface/AddOns/`
 3. Restart WoW or type `/reload`
 4. Click the minimap icon or type `/mestats`

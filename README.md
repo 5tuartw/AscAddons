@@ -6,6 +6,30 @@ Collection of quality-of-life addons for Ascension WoW (3.3.5 WotLK).
 
 ## 📦 Available Addons
 
+### [AutoCollect](AutoCollect)
+One-click transmog collection with smart filtering and visual indicators.
+
+- Rarity-based collection filters (Poor through Epic+)
+- Green checkmark overlays on quest rewards and loot rolls
+- Bind protection to prevent accidental BoE binding
+- Icon or text mode with live appearance counter
+
+**[Download Latest](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)
+
+---
+
+### [QuestKeys](QuestKeys)
+Fast questing with keyboard shortcuts - no more clicking through dialogs.
+
+- Spacebar to accept/complete quests automatically
+- Number keys (1-9) for gossip options and quest rewards
+- Visual key hints showing available shortcuts
+- ESC to decline quests
+
+**[Download Latest](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)
+
+---
+
 ### [ME Stats](MEStats)
 Track your Mystic Enchant collection progress with detailed statistics.
 

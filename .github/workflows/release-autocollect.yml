@@ -1,0 +1,57 @@
+name: Release AutoCollect
+
+on:
+  push:
+    tags:
+      - 'autocollect-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/autocollect-v}" >> $GITHUB_OUTPUT
+
+      - name: Package addon
+        run: |
+          mkdir -p release
+          cp -r AutoCollect release/
+          cd release
+          zip -r AutoCollect-${{ steps.version.outputs.VERSION }}.zip AutoCollect/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/AutoCollect-${{ steps.version.outputs.VERSION }}.zip
+          name: AutoCollect v${{ steps.version.outputs.VERSION }}
+          body: |
+            # AutoCollect v${{ steps.version.outputs.VERSION }}
+            
+            One-click transmog collection with smart filtering and visual indicators.
+            
+            ## Installation
+            1. Download `AutoCollect-${{ steps.version.outputs.VERSION }}.zip`
+            2. Extract to `World of Warcraft/Interface/AddOns/`
+            3. Restart WoW or type `/reload`
+            4. Drag the button to your preferred location
+            
+            ## Features
+            - Rarity-based collection filters (Poor, Common, Uncommon, Rare, Epic+)
+            - Green checkmark overlays on quest rewards and loot rolls with new appearances
+            - Bind protection - only collect already-bound BoE items
+            - Icon or text mode with live counter showing uncollected appearances
+            - Enhanced tooltip listing items by collection status
+            - Shift-click to force collect all items including unbound
+            
+            Based on [AutoCollectAppearance v6.0](https://github.com/Ashi-Ryu/AutoCollectAppearance) by Ashi-Ryu.
+            
+            See [README](https://github.com/5tuartw/WowAddons/blob/main/AutoCollect/README.md) for full documentation.
+          draft: false
+          prerelease: false

@@ -57,7 +57,7 @@ A WoW addon for Ascension (3.3.5 WotLK) that helps you manage and summon vanity 
 
 ## Installation
 
-1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=avh&expanded=true)
+1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=avh&expanded=true) (click the zip file in the **Assets** section)
 2. Extract the `AscensionVanityHelper` folder to:
    - **Windows**: `World of Warcraft/Interface/AddOns/`
    - **WSL/Linux**: `~/.wine/drive_c/Program Files/World of Warcraft/Interface/AddOns/`

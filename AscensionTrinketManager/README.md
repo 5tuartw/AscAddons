@@ -22,7 +22,7 @@ A lightweight WoW addon for Ascension (3.3.5 WotLK) that provides clickable trin
 
 ## Installation
 
-1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=atm&expanded=true)
+1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=atm&expanded=true) (click the zip file in the **Assets** section)
 2. Extract to `World of Warcraft/Interface/AddOns/`
 3. Restart WoW or `/reload`
 4. Type `/atm` to configure

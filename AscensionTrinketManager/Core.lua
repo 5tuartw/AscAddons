@@ -9,6 +9,10 @@ ATM.version = "1.0.0"
 ATM.TRINKET_SLOTS = {13, 14}
 ATM.CARROT_ITEM_ID = 339075  -- Stick on a Carrot
 
+-- Pending swap for retry logic
+ATM.pendingSwap = nil
+ATM.retryTimer = nil
+
 -- Frame for event handling
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("ADDON_LOADED")
@@ -17,6 +21,7 @@ frame:RegisterEvent("UNIT_INVENTORY_CHANGED")
 frame:RegisterEvent("BAG_UPDATE")
 frame:RegisterEvent("UNIT_AURA")  -- Mount/buff changes in 3.3.5
 frame:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")  -- Cooldown updates
+frame:RegisterEvent("PLAYER_REGEN_ENABLED")  -- Left combat
 
 -- Default settings
 local defaultDB = {
@@ -47,6 +52,8 @@ frame:SetScript("OnEvent", function(self, event, arg1)
         ATM:OnMountChanged()
     elseif event == "ACTIONBAR_UPDATE_COOLDOWN" then
         ATM:UpdateCooldowns()
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        ATM:OnLeaveCombat()
     end
 end)
 
@@ -221,6 +228,38 @@ end
 
 -- Equip trinket from bags
 function ATM:EquipTrinketFromBag(bag, slot, trinketSlot)
+    -- Check if blocked (in combat or casting)
+    if InCombatLockdown() or UnitCastingInfo("player") or UnitChannelInfo("player") then
+        -- Save for retry
+        ATM.pendingSwap = {
+            bag = bag,
+            slot = slot,
+            trinketSlot = trinketSlot,
+            timestamp = GetTime()
+        }
+        
+        -- Cancel existing retry timer
+        if ATM.retryTimer then
+            ATM.retryTimer:Cancel()
+        end
+        
+        -- Set up retry timer (only if not in combat)
+        if not InCombatLockdown() then
+            ATM.retryTimer = C_Timer.NewTicker(2, function()
+                ATM:RetryPendingSwap()
+            end)
+        end
+        
+        return false
+    end
+    
+    -- Clear any pending swap
+    ATM.pendingSwap = nil
+    if ATM.retryTimer then
+        ATM.retryTimer:Cancel()
+        ATM.retryTimer = nil
+    end
+    
     -- Pick up item from bag
     PickupContainerItem(bag, slot)
     
@@ -231,6 +270,69 @@ function ATM:EquipTrinketFromBag(bag, slot, trinketSlot)
     C_Timer.After(0.2, function()
         ATM:UpdateTrinketButtons()
     end)
+    
+    return true
+end
+
+-- Retry pending trinket swap
+function ATM:RetryPendingSwap()
+    if not ATM.pendingSwap then
+        if ATM.retryTimer then
+            ATM.retryTimer:Cancel()
+            ATM.retryTimer = nil
+        end
+        return
+    end
+    
+    -- Check if swap is still valid (item still in bag, not too old)
+    local age = GetTime() - ATM.pendingSwap.timestamp
+    if age > 30 then
+        -- Give up after 30 seconds
+        ATM.pendingSwap = nil
+        if ATM.retryTimer then
+            ATM.retryTimer:Cancel()
+            ATM.retryTimer = nil
+        end
+        return
+    end
+    
+    -- Verify item is still in the expected bag slot
+    local itemLink = GetContainerItemLink(ATM.pendingSwap.bag, ATM.pendingSwap.slot)
+    if not itemLink then
+        -- Item moved or was equipped manually
+        ATM.pendingSwap = nil
+        if ATM.retryTimer then
+            ATM.retryTimer:Cancel()
+            ATM.retryTimer = nil
+        end
+        return
+    end
+    
+    -- Try to equip again
+    local success = ATM:EquipTrinketFromBag(
+        ATM.pendingSwap.bag,
+        ATM.pendingSwap.slot,
+        ATM.pendingSwap.trinketSlot
+    )
+    
+    if success and ATM.retryTimer then
+        ATM.retryTimer:Cancel()
+        ATM.retryTimer = nil
+    end
+end
+
+-- Called when leaving combat
+function ATM:OnLeaveCombat()
+    -- Retry pending swap if exists
+    if ATM.pendingSwap and not ATM.retryTimer then
+        -- Start retry timer now that we're out of combat
+        ATM.retryTimer = C_Timer.NewTicker(2, function()
+            ATM:RetryPendingSwap()
+        end)
+        
+        -- Try immediately
+        ATM:RetryPendingSwap()
+    end
 end
 
 -- Auto-equip Stick on a Carrot when mounting

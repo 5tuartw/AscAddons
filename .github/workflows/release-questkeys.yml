@@ -1,0 +1,56 @@
+name: Release QuestKeys
+
+on:
+  push:
+    tags:
+      - 'questkeys-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/questkeys-v}" >> $GITHUB_OUTPUT
+
+      - name: Package addon
+        run: |
+          mkdir -p release
+          cp -r QuestKeys release/
+          cd release
+          zip -r QuestKeys-${{ steps.version.outputs.VERSION }}.zip QuestKeys/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/QuestKeys-${{ steps.version.outputs.VERSION }}.zip
+          name: QuestKeys v${{ steps.version.outputs.VERSION }}
+          body: |
+            # QuestKeys v${{ steps.version.outputs.VERSION }}
+            
+            Fast questing with keyboard shortcuts - no more clicking through dialogs.
+            
+            ## Installation
+            1. Download `QuestKeys-${{ steps.version.outputs.VERSION }}.zip`
+            2. Extract to `World of Warcraft/Interface/AddOns/`
+            3. Restart WoW or type `/reload`
+            4. Works automatically when interacting with NPCs
+            
+            ## Features
+            - **Spacebar**: Accept, continue, and complete quests automatically
+            - **Number Keys (1-9)**: Select gossip options, quest rewards, and available quests
+            - **ESC**: Decline quests
+            - **Visual Key Hints**: Shows `[1]`, `[2]`, `[SPACE]` labels on options
+            - **Smart Auto-Complete**: Automatically completes quests with 0-1 reward choices
+            
+            Type `/qk help` for command list or `/qk toggle` to enable/disable.
+            
+            See [README](https://github.com/5tuartw/WowAddons/blob/main/QuestKeys/README.md) for full documentation.
+          draft: false
+          prerelease: false
