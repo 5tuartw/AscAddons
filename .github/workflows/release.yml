@@ -24,8 +24,23 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y zip
       - name: Package addons
         run: |
-          chmod +x scripts/package_addons.sh
-          ./scripts/package_addons.sh dist
+          set -euo pipefail
+          mkdir -p dist
+
+          # Package each addon directory as its own zip at the archive root.
+          found=0
+          for addon_dir in addons/*; do
+            if [ -d "$addon_dir" ]; then
+              found=1
+              addon_name=$(basename "$addon_dir")
+              (cd addons && zip -r "../dist/${addon_name}.zip" "$addon_name")
+            fi
+          done
+
+          if [ "$found" -eq 0 ]; then
+            echo "No addon directories found under addons/."
+            exit 1
+          fi
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
