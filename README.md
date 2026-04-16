@@ -29,12 +29,11 @@ Three extra configurable action bars using default UI pages.
 
 ### Other Maintained Addons
 
-- [addons/AscensionPromptSquelcher](addons/AscensionPromptSquelcher)
-- [addons/AscensionTrinketManager](addons/AscensionTrinketManager)
-- [addons/AscensionVanityHelper](addons/AscensionVanityHelper)
-- [addons/AutoCollect](addons/AutoCollect)
-- [addons/DialogueReborn](addons/DialogueReborn)
-- [addons/MEStats](addons/MEStats)
+- [addons/AscensionPromptSquelcher](addons/AscensionPromptSquelcher) Removes prompts when looting and destroying items, including 'delete' message
+- [addons/AscensionTrinketManager](addons/AscensionTrinketManager) Lightweight clickable trinket buttons with options to auto-equip mount speed trinkets
+- [addons/AscensionVanityHelper](addons/AscensionVanityHelper) Stores sets of commonly used vanity items for new characters and prestiging
+- [addons/AutoCollect](addons/AutoCollect) Clickable button that appears when you have new appearances in your inventory
+- [addons/MEStats](addons/MEStats) Tells you how many Mystic Enchants you have collected across all classes
 
 ## Tooling
 
