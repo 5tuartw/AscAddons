@@ -1,6 +1,6 @@
 # Ascension Trinket Manager
 
-![Trinket Manager](../screenshots/atm_expand.png)
+![Trinket Manager](https://raw.githubusercontent.com/5tuartw/AscAddons/main/screenshots/atm_expand.png)
 
 A lightweight WoW addon for Ascension (3.3.5 WotLK) that provides clickable trinket buttons with automatic mount speed trinket swapping.
 

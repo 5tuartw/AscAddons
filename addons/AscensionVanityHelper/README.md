@@ -5,13 +5,13 @@ A WoW addon for Ascension (3.3.5 WotLK) that helps you manage and summon vanity 
 ## Screenshots
 
 ### Quick Summon All Items in a Set
-![Deliver Set Demo](../screenshots/AVH_Deliver_Set.gif)
+![Deliver Set Demo](https://raw.githubusercontent.com/5tuartw/AscAddons/main/screenshots/AVH_Deliver_Set.gif)
 
 ### Open Containers & Cleanup Items
-![Deliver, Open, and Cleanup Demo](../screenshots/AVH_Deliver_Open_Cleanup.gif)
+![Deliver, Open, and Cleanup Demo](https://raw.githubusercontent.com/5tuartw/AscAddons/main/screenshots/AVH_Deliver_Open_Cleanup.gif)
 
 ### Heirloom Set Example
-![Heirloom Set](../screenshots/AVH_Heirloom_Set.png)
+![Heirloom Set](https://raw.githubusercontent.com/5tuartw/AscAddons/main/screenshots/AVH_Heirloom_Set.png)
 
 ## Features
 
@@ -158,11 +158,11 @@ Uncheck individual sets to hide them from the dropdown menu.
 
 ## Support & Feedback
 
-- **Issues**: [GitHub Issues](https://github.com/5tuartw/WowAddons/issues)
+- **Issues**: [GitHub Issues](https://github.com/5tuartw/AscAddons/issues)
 
 ## License
 
-MIT License - See [LICENSE](../LICENSE) for details.
+MIT License - See [LICENSE](LICENSE) for details.
 
 ## Changelog
 

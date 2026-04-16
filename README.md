@@ -13,7 +13,7 @@ Keyboard-first quest and gossip flow.
 
 - Addon: [addons/QuestKeys](addons/QuestKeys)
 - Docs: [addons/QuestKeys/README.md](addons/QuestKeys/README.md)
-- Releases: <https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true>
+- Releases: <https://github.com/5tuartw/AscAddons/releases?q=questkeys&expanded=true>
 
 ### ExtraBarsAscension
 Three extra configurable action bars using default UI pages.
@@ -38,13 +38,13 @@ Three extra configurable action bars using default UI pages.
 
 ## Tooling
 
-- Canonical updater/checker: [addon_manager](addon_manager)
 - Release packaging helper: [create_release.sh](create_release.sh)
-- Local game deployment helper: [scripts/deploy_addons.sh](scripts/deploy_addons.sh)
 - Release/tag safety guide: [.github/RELEASE_STRATEGY.md](.github/RELEASE_STRATEGY.md)
 - Deferred repo layout plan: [.github/ADDONS_REORG_PLAN.md](.github/ADDONS_REORG_PLAN.md)
+
+Local development-only tooling directories are intentionally excluded from version control.
 
 ## Repository Notes
 
 - Third-party and reference content may exist for compatibility and testing.
-- Legacy updater entrypoint [addon_updater.py](addon_updater.py) is deprecated; use addon_manager.
+- Legacy updater entrypoint [addon_updater.py](addon_updater.py) is deprecated.

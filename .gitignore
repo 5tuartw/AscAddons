@@ -9,20 +9,18 @@
 !README.md
 !LICENSE
 !.github/
-!addon_manager/
 !addon_updater.py
 !addon_updater_config.json
 !addons/
 !create_release.sh
 !requirements.txt
-!scripts/
 
 # Whitelist first-party addon directories
 !addons/**
 
-# Track addon manager and script source files
-!addon_manager/**
-!scripts/**
+# Ignore local development tooling directories
+addon_manager/
+scripts/
 
 # Ignore generated/runtime addon manager artifacts
 addon_manager/backups/
