@@ -1,0 +1,16 @@
+## Interface: 30300
+## Title: Extra Bars Ascension
+## Notes: 3 additional action bars (pages 2, 10, 8) with stance suppression, configurable layout, mouseover visibility, and profile management.
+## Author: 5tuartw
+## Version: 2.2.0
+## SavedVariables: ExtraBarsADB
+## SavedVariablesPerCharacter: ExtraBarsDB
+
+Libs\LibStub\LibStub.lua
+Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
+Libs\AceDB-3.0\AceDB-3.0.lua
+
+Core.lua
+StanceSuppress.lua
+Bars.lua
+Options.lua

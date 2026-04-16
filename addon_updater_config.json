@@ -1,0 +1,40 @@
+{
+  "deprecated": true,
+  "replacement": "addon_manager/run.sh",
+  "game_clients": {
+    "ascension_live": {
+      "name": "Ascension Live",
+      "addons_path": "/mnt/d/Games/Ascension Launcher/resources/client/Interface/AddOns",
+      "wtf_path": "/mnt/d/Games/Ascension Launcher/resources/client/WTF"
+    },
+    "ascension_ptr": {
+      "name": "Ascension PTR",
+      "addons_path": "/mnt/d/Games/Ascension PTR/Interface/AddOns",
+      "wtf_path": "/mnt/d/Games/Ascension PTR/WTF"
+    }
+  },
+  "backup_directory": "./backups/savedvariables",
+  "addons": [
+    {
+      "name": "WeakAuras-Ascension",
+      "repo": "https://github.com/Ascension-Addons/WeakAuras-Ascension",
+      "branch": "master",
+      "addon_folders": [
+        "WeakAuras",
+        "WeakAurasOptions",
+        "WeakAurasTemplates"
+      ],
+      "saved_variables": [
+        "WeakAurasSaved.lua"
+      ],
+      "enabled": true,
+      "clients": ["ascension_live", "ascension_ptr"]
+    }
+  ],
+  "notes": [
+    "addon_folders: list of folder names to copy from the repo to AddOns directory",
+    "saved_variables: list of SavedVariables files to backup (in WTF/Account/*/SavedVariables/)",
+    "clients: which game clients to update this addon for",
+    "You can add more addons following the same pattern"
+  ]
+}

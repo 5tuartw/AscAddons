@@ -1,0 +1,53 @@
+name: Release ExtraBarsAscension
+
+"on":
+  push:
+    tags:
+      - 'extrabars-v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/extrabars-v}" >> $GITHUB_OUTPUT
+
+      - name: Package addon
+        run: |
+          mkdir -p release
+          cp -r addons/ExtraBarsAscension release/ExtraBarsAscension
+          cd release
+          zip -r ExtraBarsAscension-${{ steps.version.outputs.VERSION }}.zip ExtraBarsAscension/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/ExtraBarsAscension-${{ steps.version.outputs.VERSION }}.zip
+          name: ExtraBarsAscension v${{ steps.version.outputs.VERSION }}
+          body: |
+            # ExtraBarsAscension v${{ steps.version.outputs.VERSION }}
+
+            Adds 3 configurable action bars to the default 3.3.5 UI without replacing your UI framework.
+
+            ## Installation
+            1. Download `ExtraBarsAscension-${{ steps.version.outputs.VERSION }}.zip`
+            2. Extract to `World of Warcraft/Interface/AddOns/`
+            3. Restart WoW or type `/reload`
+            4. Type `/eba help` for command reference
+
+            ## Features
+            - Three extra bars with configurable button count and layout
+            - Optional stance-page suppression for claimed pages
+            - Per-bar size, spacing, visibility, alpha, hotkey text, and macro text controls
+            - Minimal standalone implementation with no external dependencies
+
+            See [README](https://github.com/5tuartw/WowAddons/blob/main/addons/ExtraBarsAscension/README.md) for full documentation.
+          draft: false
+          prerelease: false

@@ -22,7 +22,7 @@ jobs:
       - name: Package addon
         run: |
           mkdir -p release
-          cp -r MEStats release/
+          cp -r addons/MEStats release/MEStats
           cd release
           zip -r MEStats-${{ steps.version.outputs.VERSION }}.zip MEStats/
 
@@ -50,6 +50,6 @@ jobs:
             - Dual display modes: percentages or absolute counts
             - Minimap button for quick access
             
-            See [README](https://github.com/5tuartw/WowAddons/blob/main/MEStats/README.md) for full documentation.
+            See [README](https://github.com/5tuartw/WowAddons/blob/main/addons/MEStats/README.md) for full documentation.
           draft: false
           prerelease: false

@@ -22,7 +22,7 @@ jobs:
       - name: Package addon
         run: |
           mkdir -p release
-          cp -r QuestKeys release/
+          cp -r addons/QuestKeys release/QuestKeys
           cd release
           zip -r QuestKeys-${{ steps.version.outputs.VERSION }}.zip QuestKeys/
 
@@ -51,6 +51,6 @@ jobs:
             
             Type `/qk help` for command list or `/qk toggle` to enable/disable.
             
-            See [README](https://github.com/5tuartw/WowAddons/blob/main/QuestKeys/README.md) for full documentation.
+            See [README](https://github.com/5tuartw/WowAddons/blob/main/addons/QuestKeys/README.md) for full documentation.
           draft: false
           prerelease: false

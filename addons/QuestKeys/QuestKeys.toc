@@ -1,0 +1,8 @@
+## Interface: 30300
+## Title: QuestKeys
+## Notes: Keyboard shortcuts for quest and gossip interaction
+## Author: 5tuartw
+## Version: 1.0
+## SavedVariables: QuestKeysDB
+
+QuestKeys.lua

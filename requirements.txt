@@ -1,0 +1,7 @@
+# WoW Addon Updater Dependencies
+
+# For interactive checkbox CLI (recommended)
+inquirer>=3.1.0
+
+# Note: inquirer will work in WSL/Linux environments
+# For Windows Command Prompt, alternative options exist but WSL is recommended

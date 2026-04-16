@@ -5,45 +5,52 @@ on:
     tags:
       - 'avh-v*'
 
+permissions:
+  contents: write
+
 jobs:
   release:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    
+
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-      
-    - name: Get version from tag
-      id: get_version
-      run: echo "VERSION=${GITHUB_REF#refs/tags/avh-v}" >> $GITHUB_OUTPUT
-      
-    - name: Create release package
-      run: |
-        mkdir -p release
-        cp -r AscensionVanityHelper release/AscensionVanityHelper
-        # Remove dev files
-        find release/AscensionVanityHelper -name "*.md" ! -name "README.md" -delete
-        find release/AscensionVanityHelper -name "RELEASE_*" -delete
-        cd release
-        zip -r AscensionVanityHelper-v${{ steps.get_version.outputs.VERSION }}.zip AscensionVanityHelper
-        
-    - name: Create Release
-      uses: softprops/action-gh-release@v1
-      with:
-        files: release/AscensionVanityHelper-v${{ steps.get_version.outputs.VERSION }}.zip
-        body: |
-          ## Ascension Vanity Helper v${{ steps.get_version.outputs.VERSION }}
-          
-          Download and extract to your `World of Warcraft/Interface/AddOns/` folder.
-          
-          ### Installation
-          1. Download `AscensionVanityHelper-v${{ steps.get_version.outputs.VERSION }}.zip`
-          2. Extract to `World of Warcraft/Interface/AddOns/`
-          3. Restart WoW or `/reload` in-game
-          4. Type `/avh` to open the addon
-          
-          See [README.md](https://github.com/${{ github.repository }}/blob/main/AscensionVanityHelper/README.md) for full documentation.
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Extract version from tag
+        id: version
+        run: echo "VERSION=${GITHUB_REF#refs/tags/avh-v}" >> $GITHUB_OUTPUT
+
+      - name: Package addon
+        run: |
+          mkdir -p release
+          cp -r addons/AscensionVanityHelper release/AscensionVanityHelper
+          # Keep README.md, drop other markdown/release helper files from package.
+          find release/AscensionVanityHelper -name "*.md" ! -name "README.md" -delete
+          find release/AscensionVanityHelper -name "RELEASE_*" -delete
+          cd release
+          zip -r AscensionVanityHelper-${{ steps.version.outputs.VERSION }}.zip AscensionVanityHelper/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/AscensionVanityHelper-${{ steps.version.outputs.VERSION }}.zip
+          name: Ascension Vanity Helper v${{ steps.version.outputs.VERSION }}
+          body: |
+            # Ascension Vanity Helper v${{ steps.version.outputs.VERSION }}
+
+            Manage and summon vanity collection items with lightweight controls.
+
+            ## Installation
+            1. Download `AscensionVanityHelper-${{ steps.version.outputs.VERSION }}.zip`
+            2. Extract to `World of Warcraft/Interface/AddOns/`
+            3. Restart WoW or type `/reload`
+            4. Type `/avh` to configure
+
+            ## Features
+            - Quick set delivery and summon helpers
+            - Per-character preferences and cleanup helpers
+            - Minimal UI focused on day-to-day use
+
+            See [README](https://github.com/5tuartw/WowAddons/blob/main/addons/AscensionVanityHelper/README.md) for full documentation.
+          draft: false
+          prerelease: false

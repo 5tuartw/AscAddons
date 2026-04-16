@@ -1,0 +1,10 @@
+## Interface: 30300
+## Title: Ascension Prompt Squelcher
+## Notes: Auto-confirms selected looting and item deletion prompts on Ascension
+## Author: GitHub Copilot
+## Version: 1.0.0
+## SavedVariables: AscensionPromptSquelcherDB
+## X-Category: Interface Enhancements
+
+Core.lua
+Options.lua

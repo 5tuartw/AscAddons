@@ -1,0 +1,7 @@
+## Interface: 30300
+## Title: AutoCollect v1.0 (Ascension)
+## Notes: Auto-collect appearances with icon mode, counters, filtering & loot overlays. Based on AutoCollectAppearance by Ashi-Ryu, enhanced by 5tuartw
+## Version: 1.0
+## Author: 5tuartw (based on work by Ashi-Ryu)
+## SavedVariables: AutoCollectDB
+AutoCollect.lua

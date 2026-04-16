@@ -1,0 +1,16 @@
+AllStats -> https://github.com/Ascension-Addons/AllStats
+AnnoyingPopupRemover -> 
+AtlasLoot -> https://github.com/Szyler/AtlasLootAscension (multiple download folders - uses releases)
+Auctionator -> https://warperia.com/addon-wotlk/auctionator/ not a git repo, but I'd like to see if we can find a way to sync this easily too
+Bagnon -> https://github.com/Ascension-Addons/Bagnon (multiple download folders)
+Bartender4 -> https://github.com/Ascension-Addons/Bartender4
+DBM -> https://github.com/Ascension-Addons/DeadlyBossMods (multiple download folders)
+Details -> https://github.com/Ascension-Addons/Details-Damage-Meter
+MikScrollingBattleText -> https://github.com/Ascension-Addons/MikScrollingBattleText
+MoveAnything -> https://github.com/Ascension-Addons/MoveAnything
+OmniCC -> https://github.com/Ascension-Addons/OmniCC
+pfQuest -> https://github.com/Ascension-Addons/pfQuest
+Postal -> https://github.com/Ascension-Addons/Postal
+ProfessionMenu -> https://github.com/Ascension-Addons/ProfessionMenu
+WeakAuras -> https://github.com/Ascension-Addons/WeakAuras-Ascension
+YATP -> https://github.com/zavahcodes/YATP

@@ -22,7 +22,7 @@ jobs:
       - name: Package addon
         run: |
           mkdir -p release
-          cp -r AutoCollect release/
+          cp -r addons/AutoCollect release/AutoCollect
           cd release
           zip -r AutoCollect-${{ steps.version.outputs.VERSION }}.zip AutoCollect/
 
@@ -52,6 +52,6 @@ jobs:
             
             Based on [AutoCollectAppearance v6.0](https://github.com/Ashi-Ryu/AutoCollectAppearance) by Ashi-Ryu.
             
-            See [README](https://github.com/5tuartw/WowAddons/blob/main/AutoCollect/README.md) for full documentation.
+            See [README](https://github.com/5tuartw/WowAddons/blob/main/addons/AutoCollect/README.md) for full documentation.
           draft: false
           prerelease: false

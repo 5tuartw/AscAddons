@@ -9,14 +9,28 @@
 !README.md
 !LICENSE
 !.github/
+!addon_manager/
+!addon_updater.py
+!addon_updater_config.json
+!addons/
+!create_release.sh
+!requirements.txt
+!scripts/
 
-# Whitelist development addon directories (workspace root)
-!MEStats/
-!MEStats/**
-!AscensionVanityHelper/
-!AscensionVanityHelper/**
-!AscensionTrinketManager/
-!AscensionTrinketManager/**
+# Whitelist first-party addon directories
+!addons/**
+
+# Track addon manager and script source files
+!addon_manager/**
+!scripts/**
+
+# Ignore generated/runtime addon manager artifacts
+addon_manager/backups/
+addon_manager/temp/
+addon_manager/.venv/
+addon_manager/venv/
+addon_manager/**/__pycache__/
+addon_manager/*.log
 
 # Whitelist screenshots and releases
 !screenshots/
@@ -28,8 +42,8 @@
 archive/
 data/
 temp/
-scripts/
 tools/
+tools/venv/
 libraries/
 private/
 docs/

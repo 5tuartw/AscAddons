@@ -1,80 +1,50 @@
-# WoW Addons for Ascension
+# WowAddons
 
-Collection of quality-of-life addons for Ascension WoW (3.3.5 WotLK).
+Minimal home for personal Ascension WoW (3.3.5) addons and supporting tooling.
 
----
+## Active Addons
 
-## 📦 Available Addons
+### QuestKeys
+Keyboard-first quest and gossip flow.
 
-### [ME Stats](MEStats)
-Track your Mystic Enchant collection progress with detailed statistics.
+- Space to accept/complete/continue interactions
+- Number keys for options and rewards
+- Handles multi-page NPC option chains
 
-![MEStats](screenshots/MEStats_main.png)
+- Addon: [addons/QuestKeys](addons/QuestKeys)
+- Docs: [addons/QuestKeys/README.md](addons/QuestKeys/README.md)
+- Releases: <https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true>
 
-- Collection tracker for all Mystic Enchants
-- Statistics by class, armor type, weapon type
-- At-a-glance stats on minimap tooltip
-- Color-coded completion percentages
+### ExtraBarsAscension
+Three extra configurable action bars using default UI pages.
 
-**[Download Latest](https://github.com/5tuartw/AscAddons/releases?q=mestats&expanded=true)** · [All Releases](https://github.com/5tuartw/AscAddons/releases?q=mestats&expanded=true)
+- Supports per-bar layout, size, spacing, visibility, and paging
+- Includes stance-page suppression mode for claimed pages
+- Keeps default UI while expanding usable bar real estate
 
----
+![ExtraBarsAscension in-game layout](screenshots/EBA_unlocked.png)
 
-### [Ascension Vanity Helper](AscensionVanityHelper)
-Manage and summon vanity collection items with 15 built-in heirloom sets.
+- Addon: [addons/ExtraBarsAscension](addons/ExtraBarsAscension)
+- Docs: [addons/ExtraBarsAscension/README.md](addons/ExtraBarsAscension/README.md)
 
-![Ascension Vanity Helper](screenshots/AVH_Deliver_Set.gif)
+### Other Maintained Addons
 
-- One-click heirloom set delivery
-- Auto-open and cleanup features
-- Supports all vanity collection items
-- Customizable keybindings
+- [addons/AscensionPromptSquelcher](addons/AscensionPromptSquelcher)
+- [addons/AscensionTrinketManager](addons/AscensionTrinketManager)
+- [addons/AscensionVanityHelper](addons/AscensionVanityHelper)
+- [addons/AutoCollect](addons/AutoCollect)
+- [addons/DialogueReborn](addons/DialogueReborn)
+- [addons/MEStats](addons/MEStats)
 
-**[Download Latest](https://github.com/5tuartw/AscAddons/releases?q=avh&expanded=true)** · [All Releases](https://github.com/5tuartw/AscAddons/releases?q=avh&expanded=true)
+## Tooling
 
----
+- Canonical updater/checker: [addon_manager](addon_manager)
+- Release packaging helper: [create_release.sh](create_release.sh)
+- Local game deployment helper: [scripts/deploy_addons.sh](scripts/deploy_addons.sh)
+- Release/tag safety guide: [.github/RELEASE_STRATEGY.md](.github/RELEASE_STRATEGY.md)
+- Deferred repo layout plan: [.github/ADDONS_REORG_PLAN.md](.github/ADDONS_REORG_PLAN.md)
 
-### [Ascension Trinket Manager](AscensionTrinketManager)
-Clickable trinket buttons with auto-equip mount speed feature.
+## Repository Notes
 
-![Ascension Trinket Manager](screenshots/atm_expand.png)
-
-- Visual trinket buttons with cooldown displays
-- Auto-equip Stick on a Carrot when mounting
-- Right-click swap menu for quick changes
-- Configurable layout and positioning
-
-**[Download Latest](https://github.com/5tuartw/AscAddons/releases?q=atm&expanded=true)** · [All Releases](https://github.com/5tuartw/AscAddons/releases?q=atm&expanded=true)
-
----
-
-### [AutoCollect](AutoCollect)
-One-click transmog collection with smart filtering and visual indicators, inspired by [AutoCollectAppearance](https://github.com/Ashi-Ryu/AutoCollectAppearance) by Ashi-Ryu.
-
-![AutoCollect Options](screenshots/AC_options.png)
-![AutoCollect Tooltip](screenshots/AC_tooltip.jpg)
-
-- Icon overlays on quest rewards and loot window
-- Bind protection to prevent accidental BoE binding based on rarity
-- Icon or text mode with live appearance counter
-
-**[Download Latest](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=autocollect&expanded=true)
-
----
-
-### [QuestKeys](QuestKeys)
-Fast quest and gossip dialogue interaction with keyboard shortcuts - no more clicking through dialogs.
-
-<img src="screenshots/QK_dialogue.png" width="692">
-
-- Spacebar to accept/complete quests automatically
-- Number keys (1-9) for gossip options and quest rewards
-- Visual key hints showing available shortcuts
-
-**[Download Latest](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)** · [All Releases](https://github.com/5tuartw/WowAddons/releases?q=questkeys&expanded=true)
-
----
-
-## License
-
-MIT License - See [LICENSE](LICENSE) for details
+- Third-party and reference content may exist for compatibility and testing.
+- Legacy updater entrypoint [addon_updater.py](addon_updater.py) is deprecated; use addon_manager.
