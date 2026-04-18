@@ -27,6 +27,10 @@ Small standalone addon for Ascension's 3.3.5 client that auto-confirms a few hig
 
 ## Short Changelog
 
+### 1.0.1
+- 1.0.1
+
+
 - 2026-04-18: Added optional auto-confirm for abandon quest prompts (`/aps abandon on|off|toggle`).
 - 2026-04-18: Added matching options checkbox and status output for abandon prompt handling.
 - 2026-04-18: Kept existing prompt toggles unchanged for loot, rolls, disenchant, destroy, and appearance.
