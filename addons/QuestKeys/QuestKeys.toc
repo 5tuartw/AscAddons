@@ -2,7 +2,7 @@
 ## Title: QuestKeys
 ## Notes: Keyboard shortcuts for quest and gossip interaction
 ## Author: 5tuartw
-## Version: 1.0.1
+## Version: 1.0.2
 ## SavedVariables: QuestKeysDB
 
 QuestKeys.lua
