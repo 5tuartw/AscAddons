@@ -2,7 +2,7 @@
 ## Title: Ascension Trinket Manager
 ## Notes: Lightweight trinket swap and activation manager with auto-equip mount speed trinket
 ## Author: 5tuartw
-## Version: 1.0.0
+## Version: 1.0.1
 ## SavedVariables: AscensionTrinketManagerDB
 ## X-Category: Interface Enhancements
 
