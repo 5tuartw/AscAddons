@@ -11,6 +11,7 @@ APS.defaults = {
     autoDestroyItems = true,
     autoDeleteRareItems = true,
     autoCollectAppearance = true,
+    autoAbandonQuestPrompt = false,
 }
 
 APS.appearanceHookInstalled = false
@@ -144,6 +145,34 @@ function APS:ConfirmAppearancePopup()
     return self:ClickPopupButton1("CONFIRM_COLLECT_APPEARANCE")
 end
 
+function APS:ConfirmAbandonQuestPopup()
+    if not self.db or not self.db.autoAbandonQuestPrompt then
+        return false
+    end
+
+    if self:ClickPopupButton1("ABANDON_QUEST") then
+        return true
+    end
+
+    if self:ClickPopupButton1("ABANDON_QUEST_WITH_ITEMS") then
+        return true
+    end
+
+    return self:ClickPopupByMatcher(function(popup)
+        if popup.which == "ABANDON_QUEST" or popup.which == "ABANDON_QUEST_WITH_ITEMS" then
+            return true
+        end
+
+        local text = popup.text and popup.text.GetText and popup.text:GetText()
+        if type(text) ~= "string" then
+            return false
+        end
+
+        text = string.lower(text)
+        return string.find(text, "abandon", 1, true) and string.find(text, "quest", 1, true)
+    end)
+end
+
 function APS:ConfirmDisenchantRollPopup()
     if not self.db or not self.db.autoDisenchantRoll then
         return false
@@ -180,6 +209,13 @@ function APS:InstallPopupHook()
         if which == "CONFIRM_COLLECT_APPEARANCE" and APS.db.autoCollectAppearance then
             C_Timer.After(0.05, function()
                 APS:ConfirmAppearancePopup()
+            end)
+            return
+        end
+
+        if APS.db.autoAbandonQuestPrompt and (which == "ABANDON_QUEST" or which == "ABANDON_QUEST_WITH_ITEMS") then
+            C_Timer.After(0.05, function()
+                APS:ConfirmAbandonQuestPopup()
             end)
             return
         end
@@ -266,6 +302,7 @@ function APS:PrintStatus()
     self:Print("Destroy item prompts: " .. self:GetStatusLine("autoDestroyItems"))
     self:Print("Rare item delete prompts: " .. self:GetStatusLine("autoDeleteRareItems"))
     self:Print("Appearance collection prompts: " .. self:GetStatusLine("autoCollectAppearance"))
+    self:Print("Abandon quest prompts: " .. self:GetStatusLine("autoAbandonQuestPrompt"))
 end
 
 function APS:SetToggle(settingKey, value, label)
@@ -298,11 +335,12 @@ function APS:HandleSlashCommand(message)
         destroy = { key = "autoDestroyItems", label = "Destroy item prompts" },
         rare = { key = "autoDeleteRareItems", label = "Rare item delete prompts" },
         appearance = { key = "autoCollectAppearance", label = "Appearance collection prompts" },
+        abandon = { key = "autoAbandonQuestPrompt", label = "Abandon quest prompts" },
     }
 
     local entry = mapping[command]
     if not entry then
-        self:Print("Usage: /aps status | /aps options | /aps loot on|off|toggle | /aps roll on|off|toggle | /aps disenchant on|off|toggle | /aps destroy on|off|toggle | /aps rare on|off|toggle | /aps appearance on|off|toggle")
+        self:Print("Usage: /aps status | /aps options | /aps loot on|off|toggle | /aps roll on|off|toggle | /aps disenchant on|off|toggle | /aps destroy on|off|toggle | /aps rare on|off|toggle | /aps appearance on|off|toggle | /aps abandon on|off|toggle")
         return
     end
 
@@ -334,6 +372,9 @@ function APS:RefreshOptions()
         end
         if self.optionsControls.appearanceCheckbox then
             self.optionsControls.appearanceCheckbox:SetChecked(self.db.autoCollectAppearance)
+        end
+        if self.optionsControls.abandonCheckbox then
+            self.optionsControls.abandonCheckbox:SetChecked(self.db.autoAbandonQuestPrompt)
         end
     end
 end

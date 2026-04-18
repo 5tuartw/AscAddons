@@ -68,26 +68,38 @@ end
 
 -- Create a grid item button (icon with delete X overlay)
 function AVH:CreateCleanupItemButton(parent, itemID, bag, slot, index, customTooltip)
-    local btn = CreateFrame("Frame", "AVH_CleanupItem" .. index, parent)
+    local buttonName = "AVH_CleanupItem" .. index
+    local btn = _G[buttonName] or CreateFrame("Frame", buttonName, parent)
     btn:SetSize(50, 50)
     btn:EnableMouse(true)
     
-    -- Background
-    btn:SetBackdrop({
-        bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
-        edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
-        tile = true,
-        tileSize = 16,
-        edgeSize = 16,
-        insets = { left = 2, right = 2, top = 2, bottom = 2 }
-    })
-    btn:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
-    btn:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
-    
-    -- Item icon
-    btn.icon = btn:CreateTexture(nil, "ARTWORK")
-    btn.icon:SetSize(42, 42)
-    btn.icon:SetPoint("CENTER", 0, 0)
+    if not btn.backdropInitialized then
+        -- Background
+        btn:SetBackdrop({
+            bgFile = "Interface\\Tooltips\\UI-Tooltip-Background",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            tile = true,
+            tileSize = 16,
+            edgeSize = 16,
+            insets = { left = 2, right = 2, top = 2, bottom = 2 }
+        })
+        btn:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
+        btn:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
+
+        -- Item icon
+        btn.icon = btn:CreateTexture(nil, "ARTWORK")
+        btn.icon:SetSize(42, 42)
+        btn.icon:SetPoint("CENTER", 0, 0)
+
+        -- Delete X overlay (small red X in center)
+        btn.deleteX = btn:CreateTexture(nil, "OVERLAY")
+        btn.deleteX:SetSize(16, 16)  -- Small X
+        btn.deleteX:SetPoint("CENTER", 0, 0)
+        btn.deleteX:SetTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Up")  -- Small red X
+        btn.deleteX:SetAlpha(0.9)
+
+        btn.backdropInitialized = true
+    end
     
     local itemTexture = GetItemIcon(itemID)
     if itemTexture then
@@ -96,29 +108,34 @@ function AVH:CreateCleanupItemButton(parent, itemID, bag, slot, index, customToo
         btn.icon:SetTexture("Interface\\Icons\\INV_Misc_QuestionMark")
     end
     
-    -- Delete X overlay (small red X in center)
-    btn.deleteX = btn:CreateTexture(nil, "OVERLAY")
-    btn.deleteX:SetSize(16, 16)  -- Small X
-    btn.deleteX:SetPoint("CENTER", 0, 0)
-    btn.deleteX:SetTexture("Interface\\Buttons\\UI-GroupLoot-Pass-Up")  -- Small red X
-    btn.deleteX:SetAlpha(0.9)
-    
+    btn:SetBackdropColor(0.1, 0.1, 0.1, 0.9)
+    btn:SetBackdropBorderColor(0.5, 0.5, 0.5, 1)
+    btn.icon:SetDesaturated(false)
+    btn.icon:SetAlpha(1)
+    btn:EnableMouse(true)
+
+    btn.itemID = itemID
+    btn.bag = bag
+    btn.slot = slot
+    btn.customTooltip = customTooltip
+
     -- Click to delete
     btn:SetScript("OnMouseDown", function(self, button)
         if button == "LeftButton" and self:IsMouseEnabled() then
-            local itemLink = GetContainerItemLink(bag, slot)
+            local itemLink = GetContainerItemLink(self.bag, self.slot)
             if itemLink then
                 ClearCursor()
-                PickupContainerItem(bag, slot)
+                PickupContainerItem(self.bag, self.slot)
                 DeleteCursorItem()
                 DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00[AVH]|r Deleted: " .. itemLink)
-                
-                -- Grey out the button
-                self:SetBackdropColor(0.3, 0.3, 0.3, 0.5)
-                self:EnableMouse(false)
-                self.icon:SetDesaturated(true)
-                self.icon:SetAlpha(0.5)
-                
+
+                -- Refresh cleanup grid so bag-slot changes don't leave stale targets.
+                C_Timer.After(0.15, function()
+                    if AVH.cleanupHelper and AVH.cleanupHelper:IsShown() then
+                        AVH:ScanForCleanup()
+                    end
+                end)
+
                 -- Refresh main window if it's open
                 if AVH.mainFrame and AVH.mainFrame:IsShown() then
                     C_Timer.After(0.2, function()
@@ -132,13 +149,13 @@ function AVH:CreateCleanupItemButton(parent, itemID, bag, slot, index, customToo
     -- Tooltip (use custom tooltip if provided)
     btn:SetScript("OnEnter", function(self)
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        local itemLink = select(2, GetItemInfo(itemID))
+        local itemLink = select(2, GetItemInfo(self.itemID))
         if itemLink then
             GameTooltip:SetHyperlink(itemLink)
         end
         GameTooltip:AddLine(" ")
-        if customTooltip then
-            GameTooltip:AddLine(customTooltip, 1, 0.2, 0.2)  -- Red text, custom message
+        if self.customTooltip then
+            GameTooltip:AddLine(self.customTooltip, 1, 0.2, 0.2)  -- Red text, custom message
         else
             GameTooltip:AddLine("Click to delete", 1, 0.2, 0.2)  -- Red text, default
         end
@@ -149,7 +166,6 @@ function AVH:CreateCleanupItemButton(parent, itemID, bag, slot, index, customToo
         GameTooltip:Hide()
     end)
     
-    btn.itemID = itemID
     btn:Show()
     return btn
 end

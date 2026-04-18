@@ -12,6 +12,7 @@ Auto-collect transmog appearances with smart filtering and visual indicators for
 - **One-Click Collection**: Collect all uncollected appearances from your bags
 - **Visual Overlays**: Green checkmark icons on quest rewards and loot rolls with new appearances
 - **Smart Filtering**: Rarity-based collection (Poor, Common, Uncommon, Rare, Epic+)
+- **Bloodforged Friendly**: Bloodforged appearances collect on normal left-click (no Shift required)
 - **Bind Protection**: Option to only collect BoE items that are already bound
 - **Icon or Text Mode**: Choose between compact icon or traditional text button
 - **Live Counter**: Button shows count of uncollected appearances in bags
@@ -28,7 +29,7 @@ Auto-collect transmog appearances with smart filtering and visual indicators for
 
 ### Button Actions
 - **Left-click**: Collect appearances (respects rarity and bind settings)
-- **Shift-click**: Collect all appearances including unbound items
+- **Shift-click**: Collect all appearances including unbound items (Bloodforged already collects on normal click)
 - **Right-click**: Open settings panel
 - **Drag**: Move button anywhere on screen
 
@@ -41,6 +42,12 @@ Access via right-click or ESC → Interface → AddOns → AutoCollect
 - **Bind Protection**: Only collect already-bound BoE items
 - **Auto-Hide**: Hide button when no uncollected items
 - **Quest/Loot Overlays**: Show green checkmarks on new appearances
+
+## Short Changelog
+
+- 2026-04-18: Improved group loot roll overlay reliability for collectible-item "+" indicators.
+- 2026-04-18: Bloodforged appearances now collect on normal left-click (no Shift required).
+- 2026-04-18: Unified overlay toggle refresh behavior across loot window, quest rewards, and loot rolls.
 
 ## Credits
 

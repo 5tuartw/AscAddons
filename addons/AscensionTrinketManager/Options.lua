@@ -29,31 +29,21 @@ function ATM:CreateOptionsPanel()
             ATM.container:Hide()
         end
     end)
+
+    local hideNoActionCheck = CreateFrame("CheckButton", "ATM_HideNoActionCheck", panel, "InterfaceOptionsCheckButtonTemplate")
+    hideNoActionCheck:SetPoint("TOPLEFT", showButtonsCheck, "BOTTOMLEFT", 0, -8)
+    _G[hideNoActionCheck:GetName() .. "Text"]:SetText("Hide trinkets with no use action")
+    hideNoActionCheck:SetChecked(ATM.db.hideNoActionTrinkets)
+    hideNoActionCheck:SetScript("OnClick", function(self)
+        ATM.db.hideNoActionTrinkets = self:GetChecked()
+        ATM:UpdateTrinketButtons()
+    end)
     
     -- Auto-Carrot checkbox
     local autoCarrotCheck = CreateFrame("CheckButton", "ATM_AutoCarrotCheck", panel, "InterfaceOptionsCheckButtonTemplate")
-    autoCarrotCheck:SetPoint("TOPLEFT", showButtonsCheck, "BOTTOMLEFT", 0, -8)
+    autoCarrotCheck:SetPoint("TOPLEFT", hideNoActionCheck, "BOTTOMLEFT", 0, -8)
     _G[autoCarrotCheck:GetName() .. "Text"]:SetText("Auto-equip Stick on a Carrot when mounting")
     autoCarrotCheck:SetChecked(ATM.db.autoCarrot)
-    autoCarrotCheck:SetScript("OnClick", function(self)
-        ATM.db.autoCarrot = self:GetChecked()
-        -- Enable/disable carrot options
-        if ATM.db.autoCarrot then
-            ATM_CarrotSlotDropdown:Enable()
-            ATM_CarrotSlotDropdownText:SetTextColor(1, 1, 1)
-            ATM_CarrotInstanceCheck:Enable()
-            _G["ATM_CarrotInstanceCheckText"]:SetTextColor(1, 1, 1)
-            ATM_CarrotBGCheck:Enable()
-            _G["ATM_CarrotBGCheckText"]:SetTextColor(1, 1, 1)
-        else
-            ATM_CarrotSlotDropdown:Disable()
-            ATM_CarrotSlotDropdownText:SetTextColor(0.5, 0.5, 0.5)
-            ATM_CarrotInstanceCheck:Disable()
-            _G["ATM_CarrotInstanceCheckText"]:SetTextColor(0.5, 0.5, 0.5)
-            ATM_CarrotBGCheck:Disable()
-            _G["ATM_CarrotBGCheckText"]:SetTextColor(0.5, 0.5, 0.5)
-        end
-    end)
     
     -- Carrot slot dropdown label
     local carrotSlotLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
@@ -108,18 +98,134 @@ function ATM:CreateOptionsPanel()
     carrotBGCheck:SetScript("OnClick", function(self)
         ATM.db.carrotInBattleground = self:GetChecked()
     end)
+
+    local mountSetCheck = CreateFrame("CheckButton", "ATM_MountSetCheck", panel, "InterfaceOptionsCheckButtonTemplate")
+    mountSetCheck:SetPoint("TOPLEFT", carrotBGCheck, "BOTTOMLEFT", 0, -8)
+    _G[mountSetCheck:GetName() .. "Text"]:SetText("Use equipment set when carrot is not in bags")
+    mountSetCheck:SetChecked(ATM.db.useMountEquipmentSet)
+
+    local mountSetLabel = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
+    mountSetLabel:SetPoint("TOPLEFT", mountSetCheck, "BOTTOMLEFT", 20, -10)
+    mountSetLabel:SetText("Mount equipment set:")
+
+    local mountSetDropdown = CreateFrame("Frame", "ATM_MountSetDropdown", panel, "UIDropDownMenuTemplate")
+    mountSetDropdown:SetPoint("LEFT", mountSetLabel, "RIGHT", -10, -3)
+    UIDropDownMenu_SetWidth(mountSetDropdown, 170)
+
+    local mountSetNote = panel:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+    mountSetNote:SetPoint("TOPLEFT", mountSetLabel, "BOTTOMLEFT", 0, -8)
+    mountSetNote:SetWidth(360)
+    mountSetNote:SetJustifyH("LEFT")
+    mountSetNote:SetText("When no active equipment set is detected, ATM will stash the current trinket in bags before activating the mount set for safer restore.")
+
+    local function RefreshMountSetDropdown()
+        if not ATM:CanUseEquipmentSets() then
+            UIDropDownMenu_Initialize(mountSetDropdown, function() end)
+            UIDropDownMenu_SetText(mountSetDropdown, "Equipment manager API unavailable")
+            return
+        end
+
+        local setNames = ATM:GetEquipmentSetNames()
+        UIDropDownMenu_Initialize(mountSetDropdown, function(self)
+            local info = UIDropDownMenu_CreateInfo()
+
+            info.text = "-- None --"
+            info.value = ""
+            info.func = function()
+                ATM.db.mountEquipmentSetName = ""
+                UIDropDownMenu_SetText(mountSetDropdown, "-- None --")
+            end
+            info.checked = (ATM.db.mountEquipmentSetName == "")
+            UIDropDownMenu_AddButton(info)
+
+            for _, name in ipairs(setNames) do
+                info = UIDropDownMenu_CreateInfo()
+                info.text = name
+                info.value = name
+                info.func = function()
+                    ATM.db.mountEquipmentSetName = name
+                    UIDropDownMenu_SetText(mountSetDropdown, name)
+                end
+                info.checked = (ATM.db.mountEquipmentSetName == name)
+                UIDropDownMenu_AddButton(info)
+            end
+        end)
+
+        if ATM.db.mountEquipmentSetName and ATM.db.mountEquipmentSetName ~= "" then
+            UIDropDownMenu_SetText(mountSetDropdown, ATM.db.mountEquipmentSetName)
+        else
+            UIDropDownMenu_SetText(mountSetDropdown, "-- None --")
+        end
+    end
+
+    local function SetControlEnabled(control, textRegion, enabled)
+        if not control then
+            return
+        end
+
+        -- CheckButtons support :Enable/:Disable, but UIDropDownMenu frames do not.
+        if type(control.Enable) == "function" and type(control.Disable) == "function" then
+            if enabled then
+                control:Enable()
+            else
+                control:Disable()
+            end
+        elseif type(UIDropDownMenu_EnableDropDown) == "function" and type(UIDropDownMenu_DisableDropDown) == "function" then
+            if enabled then
+                UIDropDownMenu_EnableDropDown(control)
+            else
+                UIDropDownMenu_DisableDropDown(control)
+            end
+        end
+
+        if textRegion and type(textRegion.SetTextColor) == "function" then
+            if enabled then
+                textRegion:SetTextColor(1, 1, 1)
+            else
+                textRegion:SetTextColor(0.5, 0.5, 0.5)
+            end
+        end
+    end
+
+    local function RefreshAutoCarrotControlState()
+        local carrotEnabled = ATM.db.autoCarrot
+        SetControlEnabled(carrotSlotDropdown, ATM_CarrotSlotDropdownText, carrotEnabled)
+        SetControlEnabled(carrotInstanceCheck, _G["ATM_CarrotInstanceCheckText"], carrotEnabled)
+        SetControlEnabled(carrotBGCheck, _G["ATM_CarrotBGCheckText"], carrotEnabled)
+
+        local canUseSets = ATM:CanUseEquipmentSets()
+        local setControlsEnabled = carrotEnabled and canUseSets
+
+        SetControlEnabled(mountSetCheck, _G["ATM_MountSetCheckText"], setControlsEnabled)
+        SetControlEnabled(mountSetDropdown, ATM_MountSetDropdownText, setControlsEnabled and ATM.db.useMountEquipmentSet)
+
+        if setControlsEnabled then
+            mountSetLabel:SetTextColor(1, 1, 1)
+            mountSetNote:SetTextColor(0.8, 0.8, 0.8)
+        else
+            mountSetLabel:SetTextColor(0.5, 0.5, 0.5)
+            mountSetNote:SetTextColor(0.5, 0.5, 0.5)
+        end
+    end
+
+    autoCarrotCheck:SetScript("OnClick", function(self)
+        ATM.db.autoCarrot = self:GetChecked()
+        RefreshAutoCarrotControlState()
+    end)
+
+    mountSetCheck:SetScript("OnClick", function(self)
+        ATM.db.useMountEquipmentSet = self:GetChecked()
+        RefreshAutoCarrotControlState()
+    end)
+
+    RefreshMountSetDropdown()
     
     -- Initialize state of checkboxes based on autoCarrot
-    if not ATM.db.autoCarrot then
-        carrotInstanceCheck:Disable()
-        _G["ATM_CarrotInstanceCheckText"]:SetTextColor(0.5, 0.5, 0.5)
-        carrotBGCheck:Disable()
-        _G["ATM_CarrotBGCheckText"]:SetTextColor(0.5, 0.5, 0.5)
-    end
+    RefreshAutoCarrotControlState()
     
     -- Scale slider
     local scaleSlider = CreateFrame("Slider", "ATM_ScaleSlider", panel, "OptionsSliderTemplate")
-    scaleSlider:SetPoint("TOPLEFT", carrotBGCheck, "BOTTOMLEFT", -20, -20)
+    scaleSlider:SetPoint("TOPLEFT", mountSetNote, "BOTTOMLEFT", -20, -20)
     scaleSlider:SetMinMaxValues(0.5, 2.0)
     scaleSlider:SetValue(ATM.db.scale)
     scaleSlider:SetValueStep(0.1)

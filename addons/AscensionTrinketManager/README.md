@@ -56,11 +56,12 @@ Access via `/atm` or ESC → Interface → Addons → Ascension Trinket Manager:
 
 1.0.0 - Initial release
 
+## Short Changelog
+
+- 2026-04-18: Added optional mount equipment set fallback when Carrot is not in bags.
+- 2026-04-18: Added safer restore flow after dismount (restore previous set when available, otherwise restore trinket from bags).
+- 2026-04-18: Added option to hide trinket buttons with no use action and compact layout for visible buttons.
+
 ## License
 
 MIT License - See LICENSE file for details
-- Cooldown tracking
-- Auto-equip Stick on a Carrot when mounted
-- Horizontal/vertical layouts
-- Draggable and lockable positioning
-- Scalable buttons (50%-200%)

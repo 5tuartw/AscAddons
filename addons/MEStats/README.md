@@ -62,23 +62,11 @@ The addon reads Mystic Enchant data directly from the game using Ascension's cus
 - `C_MysticEnchant.GetNumEnchants()`
 - `C_MysticEnchant.GetEnchantInfo(index)`
 
-## Changelog
+## Short Changelog
 
-### 1.0.2
-- Added at-a-glance stats to minimap button
-
-
-### 1.0.1 (Current)
-- Added at-a-glance statistics to minimap icon tooltip
-- Display All classes and current class collection progress
-- Color-coded percentages matching main window scheme
-
-### 1.0.0
-- Initial release
-- Collection tracker with visual grid
-- Statistics by class, armor type, weapon type
-- Dual display modes (percentage/count)
-- Minimap button integration
+- 1.0.2: Added at-a-glance stats to the minimap button tooltip.
+- 1.0.1: Added dual summary (All classes + current class) with color-coded progress.
+- 1.0.0: Initial release with collection grid, category stats, and minimap integration.
 
 ## Credits
 

@@ -45,6 +45,46 @@ local NUM_QUEST_REWARDS = 10  -- Max quest reward items
 local lootRollOverlays = {}
 local NUM_LOOT_ROLLS = 4  -- Max simultaneous group loot rolls
 
+local function GetLootRollIconAnchor(rollFrame, index)
+    local iconFrame = _G["GroupLootFrame" .. index .. "IconFrame"] or rollFrame.IconFrame
+    local iconTexture =
+        _G["GroupLootFrame" .. index .. "IconFrameIcon"] or
+        _G["GroupLootFrame" .. index .. "IconFrameIconTexture"] or
+        _G["GroupLootFrame" .. index .. "IconTexture"] or
+        _G["GroupLootFrame" .. index .. "Icon"] or
+        rollFrame.IconTexture or
+        rollFrame.Icon
+
+    if not iconTexture and iconFrame then
+        local iconFrameName = iconFrame.GetName and iconFrame:GetName()
+        if iconFrameName then
+            iconTexture = _G[iconFrameName .. "Icon"] or _G[iconFrameName .. "IconTexture"]
+        end
+        iconTexture = iconTexture or iconFrame.IconTexture or iconFrame.Icon
+    end
+
+    return iconTexture or iconFrame
+end
+
+local function EnsureLootRollOverlay(index, rollFrame)
+    local overlay = lootRollOverlays[index]
+    if overlay and overlay:GetParent() ~= rollFrame then
+        overlay:Hide()
+        lootRollOverlays[index] = nil
+        overlay = nil
+    end
+
+    if not overlay then
+        overlay = rollFrame:CreateTexture(nil, "OVERLAY")
+        overlay:SetTexture("Interface\\Icons\\Spell_ChargePositive")
+        overlay:SetSize(16, 16)
+        overlay:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+        lootRollOverlays[index] = overlay
+    end
+
+    return overlay
+end
+
 local function UpdateQuestRewardOverlays()
     if not DB or not DB.showLootOverlay then
         -- Hide all overlays if disabled
@@ -124,36 +164,26 @@ local function UpdateLootRollOverlays()
     for i = 1, NUM_LOOT_ROLLS do
         local rollFrame = _G["GroupLootFrame" .. i]
         if rollFrame and rollFrame:IsShown() then
-            -- Get the item link from the roll frame
-            local itemLink = GetLootRollItemLink(rollFrame.rollID)
+            local rollID = rollFrame.rollID or rollFrame.rollId or rollFrame.rollid
+            local itemLink = rollID and GetLootRollItemLink(rollID)
             
-            if itemLink then
+            if itemLink and itemLink:match("item:") then
                 local itemID = tonumber(itemLink:match("item:(%d+)"))
                 if itemID then
                     local appearanceID = C_Appearance.GetItemAppearanceID(itemID)
-                    
-                    -- Create overlay if needed
-                    if not lootRollOverlays[i] then
-                        -- Try multiple possible icon frame names for 3.3.5
-                        local iconTexture = _G["GroupLootFrame" .. i .. "IconFrame"] or 
-                                          _G["GroupLootFrame" .. i .. "Icon"] or
-                                          rollFrame.Icon or
-                                          rollFrame.IconFrame
-                        if iconTexture then
-                            local overlay = rollFrame:CreateTexture(nil, "OVERLAY")
-                            overlay:SetTexture("Interface\\Icons\\Spell_ChargePositive")
-                            overlay:SetSize(16, 16)
-                            overlay:SetPoint("TOPLEFT", iconTexture, "TOPLEFT", 2, -2)
-                            overlay:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-                            lootRollOverlays[i] = overlay
-                        end
+
+                    local overlay = EnsureLootRollOverlay(i, rollFrame)
+                    local iconAnchor = GetLootRollIconAnchor(rollFrame, i)
+                    if overlay and iconAnchor then
+                        overlay:ClearAllPoints()
+                        overlay:SetPoint("TOPLEFT", iconAnchor, "TOPLEFT", 2, -2)
                     end
                     
                     -- Show overlay if appearance is uncollected
-                    if lootRollOverlays[i] and appearanceID and not c.IsAppearanceCollected(appearanceID) then
-                        lootRollOverlays[i]:Show()
-                    elseif lootRollOverlays[i] then
-                        lootRollOverlays[i]:Hide()
+                    if overlay and iconAnchor and appearanceID and not c.IsAppearanceCollected(appearanceID) then
+                        overlay:Show()
+                    elseif overlay then
+                        overlay:Hide()
                     end
                 else
                     if lootRollOverlays[i] then lootRollOverlays[i]:Hide() end
@@ -165,6 +195,12 @@ local function UpdateLootRollOverlays()
             if lootRollOverlays[i] then lootRollOverlays[i]:Hide() end
         end
     end
+end
+
+local function QueueLootRollOverlayRefresh()
+    C_Timer.After(0.05, UpdateLootRollOverlays)
+    C_Timer.After(0.20, UpdateLootRollOverlays)
+    C_Timer.After(0.60, UpdateLootRollOverlays)
 end
 
 local function UpdateLootOverlays()
@@ -253,9 +289,20 @@ end)
 -- Hook loot roll updates
 local lootRollFrame = CreateFrame("Frame")
 lootRollFrame:RegisterEvent("START_LOOT_ROLL")
+lootRollFrame:RegisterEvent("CANCEL_LOOT_ROLL")
 lootRollFrame:SetScript("OnEvent", function(self, event)
-    C_Timer.After(0.1, UpdateLootRollOverlays)  -- Small delay for item data to load
+    if event == "START_LOOT_ROLL" then
+        QueueLootRollOverlayRefresh()
+    else
+        C_Timer.After(0.05, UpdateLootRollOverlays)
+    end
 end)
+
+if type(GroupLootFrame_Update) == "function" then
+    hooksecurefunc("GroupLootFrame_Update", function()
+        C_Timer.After(0, UpdateLootRollOverlays)
+    end)
+end
 
 -- Create the floating clickable button first
 local button = CreateFrame("Button", BUTTON_NAME, UIParent, "UIPanelButtonTemplate")
@@ -409,6 +456,53 @@ local function ShouldCollectRarity(quality)
     end
 end
 
+local itemFlagTooltip = CreateFrame("GameTooltip", "AC_ItemFlagTooltip", nil, "GameTooltipTemplate")
+itemFlagTooltip:SetOwner(UIParent, "ANCHOR_NONE")
+
+local function GetBagItemFlags(bag, slot)
+    local isBound = false
+    local isBloodforged = false
+
+    itemFlagTooltip:ClearLines()
+    itemFlagTooltip:SetBagItem(bag, slot)
+
+    for i = 1, itemFlagTooltip:NumLines() do
+        local line = _G["AC_ItemFlagTooltipTextLeft" .. i]
+        if line then
+            local text = line:GetText()
+            if text then
+                if string.find(text, "Soulbound") or string.find(text, "Bound to") then
+                    isBound = true
+                end
+
+                local lowerText = string.lower(text)
+                if string.find(lowerText, "bloodforged", 1, true) then
+                    isBloodforged = true
+                end
+            end
+        end
+
+        if isBound and isBloodforged then
+            break
+        end
+    end
+
+    return isBound, isBloodforged
+end
+
+local function ShouldCollectItem(itemQuality, isBound, isBloodforged, forceAll)
+    if forceAll then
+        return true
+    end
+
+    -- Bloodforged items are safe to collect even when they do not become bound.
+    if isBound or isBloodforged then
+        return true
+    end
+
+    return itemQuality and ShouldCollectRarity(itemQuality)
+end
+
 -- Function to count uncollected appearances in bags
 local function CountUncollectedAppearances()
     local items = GetUncollectedItems()
@@ -418,36 +512,20 @@ local function CountUncollectedAppearances()
     for _, item in ipairs(items) do
         -- Check if item is bound
         local isBound = false
+        local isBloodforged = false
         for b = 0, 4 do
             for s = 1, GetContainerNumSlots(b) do
                 local bagItemLink = GetContainerItemLink(b, s)
                 if bagItemLink == item.link then
-                    local tooltip = CreateFrame("GameTooltip", "AC_CountTooltip" .. b .. s, nil, "GameTooltipTemplate")
-                    tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-                    tooltip:SetBagItem(b, s)
-                    for i = 1, tooltip:NumLines() do
-                        local line = _G["AC_CountTooltip" .. b .. s .. "TextLeft" .. i]
-                        if line then
-                            local text = line:GetText()
-                            if text and (string.find(text, "Soulbound") or string.find(text, "Bound to")) then
-                                isBound = true
-                                break
-                            end
-                        end
-                    end
-                    tooltip:Hide()
+                    isBound, isBloodforged = GetBagItemFlags(b, s)
                     break
                 end
             end
-            if isBound then break end
+            if isBound or isBloodforged then break end
         end
         
         -- Count based on whether it will be collected
-        if isBound then
-            -- Bound items always collected
-            willCollectCount = willCollectCount + 1
-        elseif ShouldCollectRarity(item.quality) then
-            -- Unbound items collected if rarity is enabled
+        if ShouldCollectItem(item.quality, isBound, isBloodforged, false) then
             willCollectCount = willCollectCount + 1
         else
             -- Unbound items with disabled rarity not collected
@@ -518,37 +596,21 @@ button:SetScript("OnEnter", function(self)
             for _, item in ipairs(items) do
                 -- Check if item is bound
                 local isBound = false
+                local isBloodforged = false
                 -- We need to scan bags again to check bind status
                 for b = 0, 4 do
                     for s = 1, GetContainerNumSlots(b) do
                         local bagItemLink = GetContainerItemLink(b, s)
                         if bagItemLink == item.link then
-                            local tooltip = CreateFrame("GameTooltip", "AC_TooltipCheck" .. b .. s, nil, "GameTooltipTemplate")
-                            tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-                            tooltip:SetBagItem(b, s)
-                            for i = 1, tooltip:NumLines() do
-                                local line = _G["AC_TooltipCheck" .. b .. s .. "TextLeft" .. i]
-                                if line then
-                                    local text = line:GetText()
-                                    if text and (string.find(text, "Soulbound") or string.find(text, "Bound to")) then
-                                        isBound = true
-                                        break
-                                    end
-                                end
-                            end
-                            tooltip:Hide()
+                            isBound, isBloodforged = GetBagItemFlags(b, s)
                             break
                         end
                     end
-                    if isBound then break end
+                    if isBound or isBloodforged then break end
                 end
                 
                 -- Determine if will be collected
-                if isBound then
-                    -- Bound items always collected
-                    table.insert(willCollect, item)
-                elseif ShouldCollectRarity(item.quality) then
-                    -- Unbound items collected if rarity is enabled
+                if ShouldCollectItem(item.quality, isBound, isBloodforged, false) then
                     table.insert(willCollect, item)
                 else
                     -- Unbound items with disabled rarity not collected
@@ -589,6 +651,7 @@ button:SetScript("OnEnter", function(self)
     if not DB.hideTooltipInstructions then
         GameTooltip:AddLine("Left-click: Collect appearances", 0.2, 1, 0.2)
         GameTooltip:AddLine("Shift-click: Collect all including unbound", 1, 0.82, 0)
+        GameTooltip:AddLine("Bloodforged items collect without Shift", 0.2, 1, 0.2)
         GameTooltip:AddLine("Left-click and drag: Move button", 0.5, 0.5, 1)
         GameTooltip:AddLine("Right-click: Open settings", 0.5, 0.5, 1)
     end
@@ -634,29 +697,8 @@ button:SetScript("OnClick", function(self, btn)
                         if forceAll then
                             shouldCollect = true  -- Shift-click collects everything
                         else
-                            -- Check if item is bound
-                            local tooltip = CreateFrame("GameTooltip", "AC_CollectTooltip" .. b .. s, nil, "GameTooltipTemplate")
-                            tooltip:SetOwner(UIParent, "ANCHOR_NONE")
-                            tooltip:SetBagItem(b, s)
-                            local isBound = false
-                            for i = 1, tooltip:NumLines() do
-                                local line = _G["AC_CollectTooltip" .. b .. s .. "TextLeft" .. i]
-                                if line then
-                                    local text = line:GetText()
-                                    if text and (string.find(text, "Soulbound") or string.find(text, "Bound to")) then
-                                        isBound = true
-                                        break
-                                    end
-                                end
-                            end
-                            tooltip:Hide()
-                            
-                            -- Collect if bound OR if rarity is enabled for unbound items
-                            if isBound then
-                                shouldCollect = true
-                            elseif itemQuality and ShouldCollectRarity(itemQuality) then
-                                shouldCollect = true
-                            end
+                            local isBound, isBloodforged = GetBagItemFlags(b, s)
+                            shouldCollect = ShouldCollectItem(itemQuality, isBound, isBloodforged, false)
                         end
                         
                         if shouldCollect then
@@ -888,9 +930,9 @@ eventFrame:SetScript("OnEvent", function(self, event, addon)
         lootOverlayCheckbox:SetChecked(DB.showLootOverlay)
         lootOverlayCheckbox:SetScript("OnClick", function(self)
             DB.showLootOverlay = self:GetChecked()
-            if LootFrame and LootFrame:IsShown() then
-                UpdateLootOverlays()
-            end
+            UpdateLootOverlays()
+            UpdateQuestRewardOverlays()
+            UpdateLootRollOverlays()
         end)
 
         -- Show Items in Tooltip Dropdown

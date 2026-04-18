@@ -20,6 +20,9 @@ local defaults = {
     escDecline = true,
     debugMode = true,  -- Temporarily enabled for testing
     showKeyHints = true,
+    hintMode = "overlay", -- overlay | inline (for option hints)
+    overlayOffsetX = 0,
+    overlayOffsetY = 0,
 }
 
 -- Runtime state
@@ -32,9 +35,12 @@ local optionWatcherElapsed = 0
 local gossipTraceCounter = 0
 
 local MAX_NUMBER_KEYS = 9
+local OVERLAY_OFFSET_MIN = -30
+local OVERLAY_OFFSET_MAX = 30
 
 local UpdateKeyHints
 local RefreshChoicesSoon
+local OpenOptionsPanel
 
 -- Debug helper
 local function Debug(...)
@@ -111,6 +117,22 @@ local function CreateKeyHintLabel(parent, text, anchor, xOffset, yOffset)
     fs:SetPoint(anchor, parent, anchor, xOffset, yOffset)
     table.insert(hintFontStrings, fs)
     return fs
+end
+
+local function ClampOverlayOffset(value)
+    if value < OVERLAY_OFFSET_MIN then
+        return OVERLAY_OFFSET_MIN
+    end
+    if value > OVERLAY_OFFSET_MAX then
+        return OVERLAY_OFFSET_MAX
+    end
+    return value
+end
+
+local function CreateOffsetOverlayHintLabel(parent, text, anchor, xOffset, yOffset)
+    local offsetX = DB and DB.overlayOffsetX or 0
+    local offsetY = DB and DB.overlayOffsetY or 0
+    return CreateKeyHintLabel(parent, text, anchor, xOffset + offsetX, yOffset + offsetY)
 end
 
 local function SortButtonsByPosition(leftButton, rightButton)
@@ -337,6 +359,7 @@ UpdateKeyHints = function()
     
     ClearKeyHints()
     local showHints = DB.showKeyHints
+    local useInlineOptionHints = DB.hintMode == "inline"
     
     -- Gossip options
     if GossipFrame:IsVisible() then
@@ -353,7 +376,11 @@ UpdateKeyHints = function()
             end
             RegisterChoice(keyNum, button, "gossip")
             if showHints then
-                CreateKeyHintLabel(button, "[" .. keyNum .. "]", "LEFT", 0, 0)
+                if useInlineOptionHints then
+                    AddKeyHintToButton(button, keyNum)
+                else
+                    CreateOffsetOverlayHintLabel(button, "[" .. keyNum .. "]", "LEFT", 0, 0)
+                end
             end
         end
 
@@ -367,7 +394,11 @@ UpdateKeyHints = function()
             if button then
                 local text = button:GetText()
                 if showHints and text and (text:lower():find("goodbye") or text:lower():find("farewell")) then
-                    CreateKeyHintLabel(button, "[SPACE]", "RIGHT", -8, 0)
+                    if useInlineOptionHints then
+                        AddKeyHintToButton(button, "SPACE")
+                    else
+                        CreateOffsetOverlayHintLabel(button, "[SPACE]", "RIGHT", -8, 0)
+                    end
                 end
             end
         end
@@ -387,7 +418,11 @@ UpdateKeyHints = function()
             end
             RegisterChoice(keyNum, button, "questGreeting")
             if showHints then
-                CreateKeyHintLabel(button, "[" .. keyNum .. "]", "LEFT", 0, 0)
+                if useInlineOptionHints then
+                    AddKeyHintToButton(button, keyNum)
+                else
+                    CreateOffsetOverlayHintLabel(button, "[" .. keyNum .. "]", "LEFT", 0, 0)
+                end
             end
         end
 
@@ -422,21 +457,21 @@ UpdateKeyHints = function()
         
         -- Only show [SPACE] hint if 0 or 1 choice (auto-selectable)
         if showHints and DB.spacebarAccept and QuestFrameCompleteQuestButton and numChoices <= 1 then
-            CreateKeyHintLabel(QuestFrameCompleteQuestButton, "[SPACE]", "LEFT", QuestFrameCompleteQuestButton:GetWidth() + 5, 0)
+            CreateOffsetOverlayHintLabel(QuestFrameCompleteQuestButton, "[SPACE]", "LEFT", QuestFrameCompleteQuestButton:GetWidth() + 5, 0)
         end
     end
     
     -- Quest accept/decline buttons
     if QuestFrameDetailPanel:IsVisible() then
         if showHints and DB.spacebarAccept and QuestFrameAcceptButton then
-            CreateKeyHintLabel(QuestFrameAcceptButton, "[SPACE]", "LEFT", QuestFrameAcceptButton:GetWidth() + 5, 0)
+            CreateOffsetOverlayHintLabel(QuestFrameAcceptButton, "[SPACE]", "LEFT", QuestFrameAcceptButton:GetWidth() + 5, 0)
         end
     end
     
     -- Quest complete button (progress screen)
     if showHints and QuestFrameProgressPanel:IsVisible() and DB.spacebarAccept and IsQuestCompletable() then
         if QuestFrameCompleteButton then
-            CreateKeyHintLabel(QuestFrameCompleteButton, "[SPACE]", "LEFT", QuestFrameCompleteButton:GetWidth() + 5, 0)
+            CreateOffsetOverlayHintLabel(QuestFrameCompleteButton, "[SPACE]", "LEFT", QuestFrameCompleteButton:GetWidth() + 5, 0)
         end
     end
 end
@@ -655,6 +690,164 @@ for k, v in pairs(defaults) do
     end
 end
 
+DB.hintMode = DB.hintMode == "inline" and "inline" or "overlay"
+DB.overlayOffsetX = ClampOverlayOffset(tonumber(DB.overlayOffsetX) or 0)
+DB.overlayOffsetY = ClampOverlayOffset(tonumber(DB.overlayOffsetY) or 0)
+
+local optionsPanel
+local optionsInlineCheck
+local optionsOverlayXSlider
+local optionsOverlayYSlider
+local optionsSyncing = false
+
+local function RefreshOptionsPanel()
+    if not optionsPanel or not optionsPanel.initialized or not DB then
+        return
+    end
+
+    optionsSyncing = true
+
+    optionsInlineCheck:SetChecked(DB.hintMode == "inline")
+    optionsOverlayXSlider:SetValue(DB.overlayOffsetX or 0)
+    optionsOverlayYSlider:SetValue(DB.overlayOffsetY or 0)
+
+    local overlayEnabled = DB.hintMode ~= "inline"
+    if overlayEnabled then
+        optionsOverlayXSlider:Enable()
+        optionsOverlayYSlider:Enable()
+        optionsOverlayXSlider:SetAlpha(1)
+        optionsOverlayYSlider:SetAlpha(1)
+    else
+        optionsOverlayXSlider:Disable()
+        optionsOverlayYSlider:Disable()
+        optionsOverlayXSlider:SetAlpha(0.45)
+        optionsOverlayYSlider:SetAlpha(0.45)
+    end
+
+    optionsSyncing = false
+end
+
+local function CreateOverlayOffsetSlider(parent, name, label, yOffset)
+    local slider = CreateFrame("Slider", name, parent, "OptionsSliderTemplate")
+    slider:SetWidth(260)
+    slider:SetHeight(16)
+    slider:SetPoint("TOPLEFT", 16, yOffset)
+    slider:SetMinMaxValues(OVERLAY_OFFSET_MIN, OVERLAY_OFFSET_MAX)
+    slider:SetValueStep(1)
+
+    _G[name .. "Low"]:SetText(tostring(OVERLAY_OFFSET_MIN))
+    _G[name .. "High"]:SetText(tostring(OVERLAY_OFFSET_MAX))
+    _G[name .. "Text"]:SetText(label)
+
+    return slider
+end
+
+local function CreateOptionsPanel()
+    if optionsPanel then
+        return
+    end
+
+    optionsPanel = CreateFrame("Frame", "QuestKeysOptionsPanel", UIParent)
+    optionsPanel.name = "QuestKeys"
+
+    optionsPanel:SetScript("OnShow", function(self)
+        if not self.initialized then
+            local title = self:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
+            title:SetPoint("TOPLEFT", 16, -16)
+            title:SetText("QuestKeys")
+
+            local subtitle = self:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+            subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
+            subtitle:SetText("Hint mode controls for gossip and quest greeting option labels.")
+
+            optionsInlineCheck = CreateFrame("CheckButton", "QuestKeysInlineHintsCheck", self, "InterfaceOptionsCheckButtonTemplate")
+            optionsInlineCheck:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -12)
+            _G[optionsInlineCheck:GetName() .. "Text"]:SetText("Inline option hints (append [1]-[9] to option text)")
+            optionsInlineCheck:SetScript("OnClick", function(button)
+                if optionsSyncing or not DB then
+                    return
+                end
+
+                DB.hintMode = button:GetChecked() and "inline" or "overlay"
+                RefreshOptionsPanel()
+                if IsQuestWindowOpen() then
+                    UpdateKeyHints()
+                end
+            end)
+
+            local modeNote = self:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+            modeNote:SetPoint("TOPLEFT", optionsInlineCheck, "BOTTOMLEFT", 0, -6)
+            modeNote:SetText("Overlay mode keeps hints separate from NPC text and is safer for multi-page gossip.")
+
+            optionsOverlayXSlider = CreateOverlayOffsetSlider(self, "QuestKeysOverlayXOffsetSlider", "Overlay X Offset", -120)
+            optionsOverlayYSlider = CreateOverlayOffsetSlider(self, "QuestKeysOverlayYOffsetSlider", "Overlay Y Offset", -180)
+
+            optionsOverlayXSlider:SetScript("OnValueChanged", function(slider, value)
+                if optionsSyncing or not DB then
+                    return
+                end
+
+                local rounded = ClampOverlayOffset(math.floor(value + (value >= 0 and 0.5 or -0.5)))
+                if rounded ~= value then
+                    optionsSyncing = true
+                    slider:SetValue(rounded)
+                    optionsSyncing = false
+                end
+
+                if DB.overlayOffsetX ~= rounded then
+                    DB.overlayOffsetX = rounded
+                    if IsQuestWindowOpen() then
+                        UpdateKeyHints()
+                    end
+                end
+            end)
+
+            optionsOverlayYSlider:SetScript("OnValueChanged", function(slider, value)
+                if optionsSyncing or not DB then
+                    return
+                end
+
+                local rounded = ClampOverlayOffset(math.floor(value + (value >= 0 and 0.5 or -0.5)))
+                if rounded ~= value then
+                    optionsSyncing = true
+                    slider:SetValue(rounded)
+                    optionsSyncing = false
+                end
+
+                if DB.overlayOffsetY ~= rounded then
+                    DB.overlayOffsetY = rounded
+                    if IsQuestWindowOpen() then
+                        UpdateKeyHints()
+                    end
+                end
+            end)
+
+            local sliderNote = self:CreateFontString(nil, "ARTWORK", "GameFontHighlightSmall")
+            sliderNote:SetPoint("TOPLEFT", optionsOverlayYSlider, "BOTTOMLEFT", 0, -10)
+            sliderNote:SetText("Offsets apply to overlay labels only.")
+
+            self.initialized = true
+        end
+
+        RefreshOptionsPanel()
+    end)
+
+    InterfaceOptions_AddCategory(optionsPanel)
+end
+
+OpenOptionsPanel = function()
+    if not optionsPanel then
+        CreateOptionsPanel()
+    end
+
+    if not optionsPanel then
+        return
+    end
+
+    InterfaceOptionsFrame_OpenToCategory(optionsPanel)
+    InterfaceOptionsFrame_OpenToCategory(optionsPanel)
+end
+
 -- Slash commands
 SLASH_QUESTKEYS1 = "/questkeys"
 SLASH_QUESTKEYS2 = "/qk"
@@ -669,7 +862,10 @@ SlashCmdList["QUESTKEYS"] = function(msg)
     if msg == "" or msg == "help" then
         print("|cff00ff00QuestKeys v" .. VERSION .. "|r")
         print("  |cffFFFF00/qk toggle|r - Enable/disable addon")
-        print("  |cffFFFF00/qk hints|r - Toggle key hint overlays")
+        print("  |cffFFFF00/qk hints|r - Toggle key hints on/off")
+        print("  |cffFFFF00/qk mode <overlay|inline>|r - Set option hint style")
+        print("  |cffFFFF00/qk offset <x> <y>|r - Set overlay hint offsets (-30 to 30)")
+        print("  |cffFFFF00/qk options|r - Open Interface Options panel")
         print("  |cffFFFF00/qk debug|r - Toggle debug mode")
         print("  |cffFFFF00/qk status|r - Show current settings")
         print("")
@@ -692,6 +888,36 @@ SlashCmdList["QUESTKEYS"] = function(msg)
         if IsQuestWindowOpen() then
             UpdateKeyHints()
         end
+
+    elseif msg == "options" then
+        OpenOptionsPanel()
+
+    elseif msg == "mode" then
+        print("|cff0070dd[QuestKeys]|r Current hint mode:", DB.hintMode)
+        print("|cff0070dd[QuestKeys]|r Usage: /qk mode overlay  or  /qk mode inline")
+
+    elseif msg == "mode overlay" or msg == "mode inline" then
+        local newMode = msg:match("mode%s+(%a+)")
+        DB.hintMode = newMode == "inline" and "inline" or "overlay"
+        print("|cff0070dd[QuestKeys]|r Hint mode:", DB.hintMode)
+        RefreshOptionsPanel()
+        if IsQuestWindowOpen() then
+            UpdateKeyHints()
+        end
+
+    elseif msg:find("^offset%s+") then
+        local rawX, rawY = msg:match("^offset%s+(-?%d+)%s+(-?%d+)$")
+        if rawX and rawY then
+            DB.overlayOffsetX = ClampOverlayOffset(tonumber(rawX) or 0)
+            DB.overlayOffsetY = ClampOverlayOffset(tonumber(rawY) or 0)
+            print("|cff0070dd[QuestKeys]|r Overlay offsets set to X=", DB.overlayOffsetX, "Y=", DB.overlayOffsetY)
+            RefreshOptionsPanel()
+            if IsQuestWindowOpen() then
+                UpdateKeyHints()
+            end
+        else
+            print("|cff0070dd[QuestKeys]|r Usage: /qk offset <x> <y>   (range -30..30)")
+        end
         
     elseif msg == "status" then
         print("|cff0070dd[QuestKeys]|r Status:")
@@ -700,6 +926,9 @@ SlashCmdList["QUESTKEYS"] = function(msg)
         print("  Number Keys:", DB.numberKeysSelect and "Yes" or "No")
         print("  ESC Decline:", DB.escDecline and "Yes" or "No")
         print("  Show Key Hints:", DB.showKeyHints and "Yes" or "No")
+        print("  Hint Mode:", DB.hintMode)
+        print("  Overlay Offset X:", DB.overlayOffsetX)
+        print("  Overlay Offset Y:", DB.overlayOffsetY)
         print("  Debug Mode:", DB.debugMode and "Yes" or "No")
     else
         print("|cff0070dd[QuestKeys]|r Unknown command. Type |cffFFFF00/qk help|r")
@@ -737,6 +966,7 @@ frame:SetScript("OnEvent", function(self, event, arg1)
         
     elseif event == "PLAYER_LOGIN" then
         SetupKeyBindings()
+        CreateOptionsPanel()
         
     elseif event == "GOSSIP_SHOW" or event == "QUEST_GREETING" or 
            event == "QUEST_DETAIL" or event == "QUEST_PROGRESS" or 

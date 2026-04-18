@@ -173,9 +173,12 @@ function ATM:UpdateTrinketButtons()
     if not ATM.trinketButtons then
         return
     end
+
+    local hideNoAction = ATM.db and ATM.db.hideNoActionTrinkets
     
     for i, btn in ipairs(ATM.trinketButtons) do
         local itemLink = GetInventoryItemLink("player", btn.slotID)
+        local shouldShow = true
         
         if itemLink then
             -- Has trinket equipped
@@ -195,6 +198,10 @@ function ATM:UpdateTrinketButtons()
                 btn.icon:SetDesaturated(true)
                 btn.icon:SetAlpha(0.6)
             end
+
+            if hideNoAction and not hasUse then
+                shouldShow = false
+            end
             
             -- Update cooldown
             local start, duration, enable = GetInventoryItemCooldown("player", btn.slotID)
@@ -208,8 +215,23 @@ function ATM:UpdateTrinketButtons()
             btn.icon:Hide()
             btn.emptyTexture:Show()
             btn.cooldown:Hide()
+
+            if hideNoAction then
+                shouldShow = false
+            end
+        end
+
+        if shouldShow then
+            btn:Show()
+        else
+            btn:Hide()
+            if btn.dropdown and btn.dropdown:IsShown() then
+                btn.dropdown:Hide()
+            end
         end
     end
+
+    ATM:UpdateLayout()
 end
 
 -- Toggle trinket swap dropdown
@@ -324,20 +346,33 @@ function ATM:UpdateLayout()
     if not ATM.trinketButtons then
         return
     end
+
+    local visibleButtons = {}
+    for _, btn in ipairs(ATM.trinketButtons) do
+        if btn:IsShown() then
+            table.insert(visibleButtons, btn)
+        end
+    end
+
+    if #visibleButtons == 0 then
+        ATM.container:SetSize(4, 4)
+        ATM.container.bg:SetAllPoints()
+        return
+    end
     
-    for i, btn in ipairs(ATM.trinketButtons) do
+    for i, btn in ipairs(visibleButtons) do
         btn:ClearAllPoints()
         
         if ATM.db.orientation == "horizontal" then
             -- Horizontal layout
             local xOffset = (i - 1) * 38
             btn:SetPoint("LEFT", ATM.container, "LEFT", xOffset + 2, 0)
-            ATM.container:SetSize(80, 40)
+            ATM.container:SetSize((#visibleButtons * 38) + 4, 40)
         else
             -- Vertical layout
             local yOffset = -(i - 1) * 38
             btn:SetPoint("TOP", ATM.container, "TOP", 0, yOffset - 2)
-            ATM.container:SetSize(40, 80)
+            ATM.container:SetSize(40, (#visibleButtons * 38) + 4)
         end
     end
     

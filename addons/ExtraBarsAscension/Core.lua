@@ -110,13 +110,27 @@ end
 -- Profile change handler
 ---------------------------------------------------------------------------
 function EBA:OnProfileChanged()
-    Print("Profile changed. Type |cff00ff00/reload|r to fully apply.")
+    if InCombatLockdown() then
+        self.pendingProfileRefresh = true
+        Print("Profile changed in combat. Deferring bar refresh until combat ends.")
+        return
+    end
+
+    Print("Profile changed. Reapplying bar layout and positions now.")
     for i = 1, NUM_BARS do
         if self.bars[i] then
             self:RefreshBarLayout(i)
+            self:ApplyBarPosition(i)
             self:ApplyVisibility(i)
+
+            local cfg = self.db.profile.bars[i]
+            if cfg and cfg.scale then
+                self.bars[i].frame:SetScale(cfg.scale)
+            end
         end
     end
+
+    Print("Some settings (action pages/stance suppression) may still require |cff00ff00/reload|r.")
 end
 
 ---------------------------------------------------------------------------
@@ -197,7 +211,7 @@ local function SlashHandler(msg)
 
     if cmd == "reset" then
         EBA.db:ResetProfile()
-        Print("Settings reset to defaults. /reload to apply.")
+        Print("Settings reset to defaults.")
         return
     end
 
@@ -406,6 +420,7 @@ SlashCmdList["EXTRABARSASCENSION"] = SlashHandler
 ---------------------------------------------------------------------------
 EBA:RegisterEvent("ADDON_LOADED")
 EBA:RegisterEvent("PLAYER_LOGIN")
+EBA:RegisterEvent("PLAYER_REGEN_ENABLED")
 EBA:SetScript("OnEvent", function(self, event, arg1)
     if event == "ADDON_LOADED" and arg1 == ADDON_NAME then
         InitDB()
@@ -413,6 +428,11 @@ EBA:SetScript("OnEvent", function(self, event, arg1)
     elseif event == "PLAYER_LOGIN" then
         self:ApplyStanceSuppression()
         self:UnregisterEvent("PLAYER_LOGIN")
+    elseif event == "PLAYER_REGEN_ENABLED" then
+        if self.pendingProfileRefresh then
+            self.pendingProfileRefresh = nil
+            self:OnProfileChanged()
+        end
     end
 end)
 

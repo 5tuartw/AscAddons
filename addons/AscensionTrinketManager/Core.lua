@@ -3,7 +3,7 @@
 
 -- Create addon namespace
 ATM = {}
-ATM.version = "1.0.0"
+ATM.version = "1.1.0"
 
 -- Trinket slot IDs
 ATM.TRINKET_SLOTS = {13, 14}
@@ -34,9 +34,20 @@ local defaultDB = {
     carrotSlot = 14,              -- Which trinket slot to use (13 or 14)
     carrotInInstance = false,     -- Enable auto-carrot in instances
     carrotInBattleground = false, -- Enable auto-carrot in battlegrounds
+    useMountEquipmentSet = false, -- If carrot is not in bags, use a mount set
+    mountEquipmentSetName = "",  -- Name of equipment manager set used while mounted
+    hideNoActionTrinkets = false, -- Hide trinket buttons that have no use effect
     locked = false,               -- Lock buttons in place
     showButtons = true,           -- Show trinket buttons
 }
+
+local function GetItemIDFromLink(itemLink)
+    if type(itemLink) ~= "string" then
+        return nil
+    end
+
+    return tonumber(itemLink:match("item:(%d+)"))
+end
 
 -- Event handler
 frame:SetScript("OnEvent", function(self, event, arg1)
@@ -122,6 +133,149 @@ function ATM:OnBagUpdate()
     end
 end
 
+function ATM:CanUseEquipmentSets()
+    return type(GetNumEquipmentSets) == "function" and
+           type(GetEquipmentSetInfo) == "function" and
+           type(UseEquipmentSet) == "function"
+end
+
+function ATM:GetEquipmentSetNames()
+    if not ATM:CanUseEquipmentSets() then
+        return {}
+    end
+
+    local names = {}
+    local numSets = GetNumEquipmentSets() or 0
+    for i = 1, numSets do
+        local name = GetEquipmentSetInfo(i)
+        if type(name) == "string" and name ~= "" then
+            table.insert(names, name)
+        end
+    end
+
+    table.sort(names)
+    return names
+end
+
+function ATM:EquipmentSetExists(setName)
+    if type(setName) ~= "string" or setName == "" then
+        return false
+    end
+
+    local names = ATM:GetEquipmentSetNames()
+    for _, name in ipairs(names) do
+        if name == setName then
+            return true
+        end
+    end
+
+    return false
+end
+
+function ATM:GetEquippedEquipmentSetName()
+    if not ATM:CanUseEquipmentSets() then
+        return nil
+    end
+
+    local numSets = GetNumEquipmentSets() or 0
+
+    if type(IsEquipmentSetEquipped) == "function" then
+        for i = 1, numSets do
+            local name = GetEquipmentSetInfo(i)
+            if type(name) == "string" and name ~= "" and IsEquipmentSetEquipped(name) then
+                return name
+            end
+        end
+    end
+
+    for i = 1, numSets do
+        local name, _, _, isEquipped = GetEquipmentSetInfo(i)
+        if type(name) == "string" and name ~= "" and isEquipped then
+            return name
+        end
+    end
+
+    return nil
+end
+
+function ATM:FindItemInBagsByID(itemID)
+    if not itemID then
+        return nil, nil
+    end
+
+    for bag = 0, 4 do
+        for slot = 1, GetContainerNumSlots(bag) do
+            local itemLink = GetContainerItemLink(bag, slot)
+            if GetItemIDFromLink(itemLink) == itemID then
+                return bag, slot
+            end
+        end
+    end
+
+    return nil, nil
+end
+
+function ATM:GetFirstEmptyBagSlot()
+    for bag = 0, 4 do
+        for slot = 1, GetContainerNumSlots(bag) do
+            local itemLink = GetContainerItemLink(bag, slot)
+            if not itemLink then
+                return bag, slot
+            end
+        end
+    end
+
+    return nil, nil
+end
+
+function ATM:MoveEquippedItemToBags(slotID)
+    if InCombatLockdown() then
+        return false
+    end
+
+    local itemLink = GetInventoryItemLink("player", slotID)
+    if not itemLink then
+        return false
+    end
+
+    local bag, slot = ATM:GetFirstEmptyBagSlot()
+    if not bag then
+        return false
+    end
+
+    ClearCursor()
+    PickupInventoryItem(slotID)
+    PickupContainerItem(bag, slot)
+
+    if CursorHasItem and CursorHasItem() then
+        ClearCursor()
+        return false
+    end
+
+    return true
+end
+
+function ATM:UseEquipmentSetByName(setName)
+    if not ATM:CanUseEquipmentSets() then
+        return false
+    end
+
+    if type(setName) ~= "string" or setName == "" then
+        return false
+    end
+
+    if not ATM:EquipmentSetExists(setName) then
+        return false
+    end
+
+    if InCombatLockdown() then
+        return false
+    end
+
+    local ok = pcall(UseEquipmentSet, setName)
+    return ok and true or false
+end
+
 -- Update cooldowns only
 function ATM:UpdateCooldowns()
     if not ATM.trinketButtons then
@@ -140,7 +294,15 @@ end
 
 -- Mount changed
 function ATM:OnMountChanged()
+    -- Check if mount state actually changed
+    local isMounted = IsMounted()
+
     if not ATM.db.autoCarrot then
+        -- If auto-carrot was disabled while mounted, still restore on the next dismount.
+        if not isMounted and ATM.wasMounted then
+            ATM:RestorePreviousTrinket()
+        end
+        ATM.wasMounted = isMounted
         return
     end
     
@@ -153,9 +315,6 @@ function ATM:OnMountChanged()
             return  -- In instance but disabled
         end
     end
-    
-    -- Check if mount state actually changed
-    local isMounted = IsMounted()
     
     if isMounted and not ATM.wasMounted then
         -- Just mounted
@@ -337,26 +496,10 @@ end
 
 -- Auto-equip Stick on a Carrot when mounting
 function ATM:EquipCarrot()
-    -- Find carrot in bags
-    local carrotBag, carrotSlot
-    for bag = 0, 4 do
-        for slot = 1, GetContainerNumSlots(bag) do
-            local itemLink = GetContainerItemLink(bag, slot)
-            if itemLink then
-                local itemID = tonumber(itemLink:match("item:(%d+)"))
-                if itemID == ATM.CARROT_ITEM_ID then
-                    carrotBag = bag
-                    carrotSlot = slot
-                    break
-                end
-            end
-        end
-        if carrotBag then break end
-    end
-    
-    if not carrotBag then
-        return  -- Don't have carrot
-    end
+    ATM.mountSwapContext = nil
+
+    -- Find carrot in bags first (preferred, safest path).
+    local carrotBag, carrotSlot = ATM:FindItemInBagsByID(ATM.CARROT_ITEM_ID)
     
     -- Check if carrot is already equipped
     for _, trinketSlot in ipairs(ATM.TRINKET_SLOTS) do
@@ -372,19 +515,74 @@ function ATM:EquipCarrot()
     -- Save current trinket in configured slot
     local trinketSlot = ATM.db.carrotSlot
     local currentLink = GetInventoryItemLink("player", trinketSlot)
+    local context = {
+        slot = trinketSlot,
+        previousTrinketLink = currentLink,
+        previousSetName = ATM:GetEquippedEquipmentSetName(),
+        usedEquipmentSet = false,
+    }
+
     if currentLink then
         ATM.savedTrinket = {
             itemLink = currentLink,
             slot = trinketSlot
         }
     end
-    
-    -- Equip carrot
-    ATM:EquipTrinketFromBag(carrotBag, carrotSlot, trinketSlot)
+
+    -- If carrot is in bags, use normal swap logic.
+    if carrotBag and carrotSlot then
+        ATM:EquipTrinketFromBag(carrotBag, carrotSlot, trinketSlot)
+        return
+    end
+
+    -- Optional fallback: mount equipment set can fetch items from bank on Ascension.
+    local mountSetName = ATM.db.mountEquipmentSetName
+    if ATM.db.useMountEquipmentSet and type(mountSetName) == "string" and mountSetName ~= "" then
+        if not context.previousSetName and context.previousTrinketLink then
+            -- No active set detected: move currently worn trinket into bags first so we can always restore safely.
+            local moved = ATM:MoveEquippedItemToBags(trinketSlot)
+            if not moved then
+                return
+            end
+        end
+
+        if ATM:UseEquipmentSetByName(mountSetName) then
+            context.usedEquipmentSet = true
+            context.mountSetName = mountSetName
+            ATM.mountSwapContext = context
+            return
+        end
+    end
+
+    -- Neither bag carrot nor equipment-set fallback worked.
+    ATM.mountSwapContext = nil
+    ATM.savedTrinket = nil
+    return
 end
 
 -- Restore previous trinket after dismounting
 function ATM:RestorePreviousTrinket()
+    if ATM.mountSwapContext and ATM.mountSwapContext.usedEquipmentSet then
+        local context = ATM.mountSwapContext
+        ATM.mountSwapContext = nil
+
+        -- Preferred restore path: reactivate the previously equipped set.
+        if context.previousSetName and ATM:UseEquipmentSetByName(context.previousSetName) then
+            return
+        end
+
+        -- Fallback path: restore trinket directly from bags.
+        local savedItemID = GetItemIDFromLink(context.previousTrinketLink)
+        if savedItemID then
+            local bag, slot = ATM:FindItemInBagsByID(savedItemID)
+            if bag and slot then
+                ATM:EquipTrinketFromBag(bag, slot, context.slot or ATM.db.carrotSlot)
+            end
+        end
+
+        return
+    end
+
     if not ATM.savedTrinket then
         return
     end
@@ -397,7 +595,7 @@ function ATM:RestorePreviousTrinket()
         return
     end
     
-    local itemID = tonumber(currentLink:match("item:(%d+)"))
+    local itemID = GetItemIDFromLink(currentLink)
     if itemID ~= ATM.CARROT_ITEM_ID then
         -- Carrot was already swapped out
         ATM.savedTrinket = nil
@@ -405,20 +603,13 @@ function ATM:RestorePreviousTrinket()
     end
     
     -- Find the saved trinket in bags
-    local savedItemID = tonumber(ATM.savedTrinket.itemLink:match("item:(%d+)"))
-    for bag = 0, 4 do
-        for slot = 1, GetContainerNumSlots(bag) do
-            local itemLink = GetContainerItemLink(bag, slot)
-            if itemLink then
-                local bagItemID = tonumber(itemLink:match("item:(%d+)"))
-                if bagItemID == savedItemID then
-                    -- Found it, swap back
-                    ATM:EquipTrinketFromBag(bag, slot, trinketSlot)
-                    ATM.savedTrinket = nil
-                    return
-                end
-            end
-        end
+    local savedItemID = GetItemIDFromLink(ATM.savedTrinket.itemLink)
+    local bag, slot = ATM:FindItemInBagsByID(savedItemID)
+    if bag and slot then
+        -- Found it, swap back
+        ATM:EquipTrinketFromBag(bag, slot, trinketSlot)
+        ATM.savedTrinket = nil
+        return
     end
     
     ATM.savedTrinket = nil
@@ -427,21 +618,7 @@ end
 -- Manual carrot swap (Alt+click on trinket button)
 function ATM:ManualCarrotSwap(trinketSlot)
     -- Find carrot in bags
-    local carrotBag, carrotSlot
-    for bag = 0, 4 do
-        for slot = 1, GetContainerNumSlots(bag) do
-            local itemLink = GetContainerItemLink(bag, slot)
-            if itemLink then
-                local itemID = tonumber(itemLink:match("item:(%d+)"))
-                if itemID == ATM.CARROT_ITEM_ID then
-                    carrotBag = bag
-                    carrotSlot = slot
-                    break
-                end
-            end
-        end
-        if carrotBag then break end
-    end
+    local carrotBag, carrotSlot = ATM:FindItemInBagsByID(ATM.CARROT_ITEM_ID)
     
     if not carrotBag then
         return
@@ -450,7 +627,7 @@ function ATM:ManualCarrotSwap(trinketSlot)
     -- Check if carrot is already equipped in this slot
     local currentLink = GetInventoryItemLink("player", trinketSlot)
     if currentLink then
-        local itemID = tonumber(currentLink:match("item:(%d+)"))
+        local itemID = GetItemIDFromLink(currentLink)
         if itemID == ATM.CARROT_ITEM_ID then
             return
         end
@@ -539,6 +716,10 @@ function ATM:ResetToDefaults()
     ATM.container:ClearAllPoints()
     ATM.container:SetPoint("CENTER", UIParent, "CENTER", 0, -200)
     ATM.container:SetScale(ATM.db.scale)
+
+    ATM.savedTrinket = nil
+    ATM.mountSwapContext = nil
+    ATM.wasMounted = IsMounted()
     
     -- Update UI
     ATM:UpdateLayout()

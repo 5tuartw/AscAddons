@@ -65,8 +65,15 @@ function APS:CreateOptionsPanel()
         APS:SetToggle("autoCollectAppearance", button:GetChecked(), "Appearance collection prompts")
     end)
 
+    local abandonCheckbox = CreateFrame("CheckButton", "APS_AbandonCheckbox", panel, "InterfaceOptionsCheckButtonTemplate")
+    abandonCheckbox:SetPoint("TOPLEFT", appearanceCheckbox, "BOTTOMLEFT", 0, -8)
+    _G[abandonCheckbox:GetName() .. "Text"]:SetText("Auto-confirm abandon quest prompts")
+    abandonCheckbox:SetScript("OnClick", function(button)
+        APS:SetToggle("autoAbandonQuestPrompt", button:GetChecked(), "Abandon quest prompts")
+    end)
+
     local warning = panel:CreateFontString(nil, "ARTWORK", "GameFontNormal")
-    warning:SetPoint("TOPLEFT", appearanceCheckbox, "BOTTOMLEFT", 0, -20)
+    warning:SetPoint("TOPLEFT", abandonCheckbox, "BOTTOMLEFT", 0, -20)
     warning:SetWidth(560)
     warning:SetJustifyH("LEFT")
     warning:SetText("|cffff8080Warning:|r rare-item deletion bypasses the usual extra confirmation. Disable that toggle if you want the client to keep asking before deleting blue, purple, or better items.")
@@ -75,7 +82,7 @@ function APS:CreateOptionsPanel()
     commands:SetPoint("TOPLEFT", warning, "BOTTOMLEFT", 0, -20)
     commands:SetWidth(560)
     commands:SetJustifyH("LEFT")
-    commands:SetText("Slash commands: /aps status, /aps loot on|off|toggle, /aps roll on|off|toggle, /aps disenchant on|off|toggle, /aps destroy on|off|toggle, /aps rare on|off|toggle, /aps appearance on|off|toggle")
+    commands:SetText("Slash commands: /aps status, /aps loot on|off|toggle, /aps roll on|off|toggle, /aps disenchant on|off|toggle, /aps destroy on|off|toggle, /aps rare on|off|toggle, /aps appearance on|off|toggle, /aps abandon on|off|toggle")
 
     InterfaceOptions_AddCategory(panel)
 
@@ -87,5 +94,6 @@ function APS:CreateOptionsPanel()
         destroyCheckbox = destroyCheckbox,
         rareCheckbox = rareCheckbox,
         appearanceCheckbox = appearanceCheckbox,
+        abandonCheckbox = abandonCheckbox,
     }
 end

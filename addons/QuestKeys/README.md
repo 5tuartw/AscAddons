@@ -54,6 +54,12 @@ Fast quest and gossip interactions using keyboard shortcuts for Ascension WoW (3
 
 MIT License - See [LICENSE](LICENSE)
 
+## Short Changelog
+
+- 2026-04-18: Added hint display modes (inline vs overlay) with configurable behavior.
+- 2026-04-18: Added overlay X/Y offset controls for better alignment on custom UIs.
+- 2026-04-18: Improved gossip/reward hint refresh to reduce stale labels during rapid dialogue transitions.
+
 
 All state is saved per-character in `SavedVariables/QuestKeysDB.lua`.
 

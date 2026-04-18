@@ -164,31 +164,11 @@ Uncheck individual sets to hide them from the dropdown menu.
 
 MIT License - See [LICENSE](LICENSE) for details.
 
-## Changelog
+## Short Changelog
 
-### v1.0.3 (2025-11-14)
-- Fixed loss of items when adding to a pre-built set
-
-### v1.0.2 (2025-11-14)
-- Renamed Hunter/Shaman sets to Mail
-- Added Swift Hand of Justice to Heirloom - Misc
-- Fixed summoning multiples of same item (non-unique only)
-- Fixed cleanup to show any item from any set to delete
-
-### v1.0.1 (2025-11-09)
-- Changed minimap icon
-- Updated namespace
-
-### v0.1.0 (2025-11-09)
-- Added 14 heirloom sets (115 total items)
-- Added per-set visibility toggles in options
-- Renamed "Batch Summon" to "Deliver Set"
-- Reordered dropdown: New Character first, then heirlooms by category
-- Added Ethereal Tool Dispenser Crate as openable container
-- Improved cleanup helper with special item handling
-- Fixed grid alignment in cleanup window
-- Removed redundant warchest helper
-- Cleaned up chat message spam
+- 2026-04-18: Fixed cleanup helper reliability by reusing item buttons and rescanning after delete.
+- 2026-04-18: Corrected stale bag-slot targeting in cleanup actions after inventory shifts.
+- 2025-11-14: Stabilized built-in set behavior and cleanup handling for mixed vanity inventories.
 
 ## Customization
 

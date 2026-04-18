@@ -279,6 +279,12 @@ local function CreateBarPanel(barIndex, parentName)
     gridCheck:SetScript("OnClick", function(self)
         local val = self:GetChecked() and true or false
         EBA.db.profile.bars[barIndex].showGrid = val
+
+        if InCombatLockdown() then
+            Print("Grid changes will apply after combat.")
+            return
+        end
+
         local barData = EBA.bars[barIndex]
         if barData then
             for j = 1, MAX_BUTTONS do

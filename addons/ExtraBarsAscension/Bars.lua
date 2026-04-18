@@ -248,6 +248,8 @@ end
 -- Live refresh: relayout + restyle a bar (called from Options panel)
 ---------------------------------------------------------------------------
 function EBA:RefreshBarLayout(barIndex)
+    if InCombatLockdown() then return end
+
     local barData = self.bars[barIndex]
     if not barData then return end
     local cfg = EBA.db.profile.bars[barIndex]
@@ -263,6 +265,34 @@ function EBA:RefreshBarLayout(barIndex)
     local mover = self.movers[barIndex]
     if mover and mover:IsShown() then
         mover:SetAllPoints(barData.frame)
+    end
+end
+
+function EBA:ApplyBarPosition(barIndex)
+    local barData = self.bars[barIndex]
+    if not barData then
+        return
+    end
+
+    local frame = barData.frame
+    local barName = frame:GetName()
+    local pos = self.db.profile.positions[barName] or DEFAULT_POSITIONS[barIndex]
+    if type(pos) ~= "table" then
+        return
+    end
+
+    local point = pos[1] or "CENTER"
+    local relativeTo = _G[pos[2]] or UIParent
+    local relativePoint = pos[3] or "CENTER"
+    local x = tonumber(pos[4]) or 0
+    local y = tonumber(pos[5]) or 0
+
+    frame:ClearAllPoints()
+    frame:SetPoint(point, relativeTo, relativePoint, x, y)
+
+    local mover = self.movers[barIndex]
+    if mover and mover:IsShown() then
+        mover:SetAllPoints(frame)
     end
 end
 
@@ -581,6 +611,8 @@ end)
 -- Re-style all buttons (called when button style changes live)
 ---------------------------------------------------------------------------
 function EBA:ApplyButtonStyle()
+    if InCombatLockdown() then return end
+
     for i = 1, NUM_BARS do
         local barData = self.bars[i]
         if barData then
