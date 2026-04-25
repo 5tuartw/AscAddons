@@ -13,7 +13,7 @@ Keyboard-first quest and gossip flow.
 
 - Addon: [addons/QuestKeys](addons/QuestKeys)
 - Docs: [addons/QuestKeys/README.md](addons/QuestKeys/README.md)
-- Releases: <https://github.com/5tuartw/AscAddons/releases?q=questkeys&expanded=true>
+- Releases: <https://github.com/5tuartw/AscAddons/releases?q=questkeys-v&expanded=true>
 
 ### ExtraBarsAscension
 Three extra configurable action bars using default UI pages.
@@ -35,15 +35,7 @@ Three extra configurable action bars using default UI pages.
 - [addons/AutoCollect](addons/AutoCollect) Clickable button that appears when you have new appearances in your inventory
 - [addons/MEStats](addons/MEStats) Tells you how many Mystic Enchants you have collected across all classes
 
-## Tooling
-
-- Release packaging helper: [create_release.sh](create_release.sh)
-- Release/tag safety guide: [.github/RELEASE_STRATEGY.md](.github/RELEASE_STRATEGY.md)
-- Deferred repo layout plan: [.github/ADDONS_REORG_PLAN.md](.github/ADDONS_REORG_PLAN.md)
-
-Local development-only tooling directories are intentionally excluded from version control.
 
 ## Repository Notes
 
 - Third-party and reference content may exist for compatibility and testing.
-- Legacy updater entrypoint [addon_updater.py](addon_updater.py) is deprecated.
