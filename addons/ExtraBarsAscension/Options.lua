@@ -506,7 +506,7 @@ function EBA:CreateOptionsPanel()
     -- Version
     local version = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalSmall")
     version:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -4)
-    version:SetText("Version 2.2.0")
+    version:SetText("Version 2.2.1")
     version:SetTextColor(0.5, 0.5, 0.5)
 
     -- Description

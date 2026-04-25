@@ -206,6 +206,12 @@ local function LayoutButtons(barIndex)
     local barData = EBA.bars[barIndex]
     if not barData then return end
 
+    if InCombatLockdown() then
+        EBA.pendingBarLayouts = EBA.pendingBarLayouts or {}
+        EBA.pendingBarLayouts[barIndex] = true
+        return
+    end
+
     local cfg = EBA.db.profile.bars[barIndex]
     local size = EBA:GetButtonSize(barIndex)
     local space = EBA:GetButtonSpace(barIndex)
@@ -218,28 +224,23 @@ local function LayoutButtons(barIndex)
     frame:SetSize(w, h)
 
     -- Position each button
-    local inCombat = InCombatLockdown()
     for i = 1, MAX_BUTTONS do
         local button = barData.buttons[i]
         if i <= numButtons then
-            if not inCombat then
-                button:ClearAllPoints()
-                button:SetSize(size, size)
+            button:ClearAllPoints()
+            button:SetSize(size, size)
 
-                local row = math_ceil(i / perRow) - 1
-                local col = (i - 1) % perRow
+            local row = math_ceil(i / perRow) - 1
+            local col = (i - 1) % perRow
 
-                button:SetPoint(
-                    "TOPLEFT", frame, "TOPLEFT",
-                    col * (size + space),
-                    -row * (size + space)
-                )
-                button:Show()
-            end
+            button:SetPoint(
+                "TOPLEFT", frame, "TOPLEFT",
+                col * (size + space),
+                -row * (size + space)
+            )
+            button:Show()
         else
-            if not inCombat then
-                button:Hide()
-            end
+            button:Hide()
         end
     end
 end
@@ -248,7 +249,11 @@ end
 -- Live refresh: relayout + restyle a bar (called from Options panel)
 ---------------------------------------------------------------------------
 function EBA:RefreshBarLayout(barIndex)
-    if InCombatLockdown() then return end
+    if InCombatLockdown() then
+        self.pendingBarLayouts = self.pendingBarLayouts or {}
+        self.pendingBarLayouts[barIndex] = true
+        return
+    end
 
     local barData = self.bars[barIndex]
     if not barData then return end

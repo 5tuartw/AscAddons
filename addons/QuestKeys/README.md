@@ -14,7 +14,7 @@ Fast quest and gossip interactions using keyboard shortcuts for Ascension WoW (3
 
 ## Installation
 
-1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=questkeys&expanded=true) (click the zip file in the **Assets** section)
+1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=questkeys-v&expanded=true) (click the zip file in the **Assets** section)
 2. Extract to `World of Warcraft/Interface/AddOns/`
 3. Restart WoW or type `/reload`
 4. Works automatically when interacting with NPCs

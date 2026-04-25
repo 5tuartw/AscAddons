@@ -86,10 +86,14 @@ Most changes require `/reload` to apply. Visibility and alpha changes apply imme
 
 ## Installation
 
-Copy the `ExtraBarsAscension` folder to your `Interface/AddOns/` directory.
+1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=extrabars-v&expanded=true) (click the zip file in the **Assets** section)
+2. Extract to `World of Warcraft/Interface/AddOns/`
+3. Restart WoW or `/reload`
+4. Type `/eba help` for command reference
 
 ## Short Changelog
 
 - 2026-04-18: Profile reset/change now reapplies bar positions immediately (including x/y offsets).
 - 2026-04-18: Live profile updates now reapply layout, visibility, and scale without requiring reload for those parts.
 - 2026-04-18: Clarified reset messaging to distinguish live-applied settings from reload-required settings.
+- 2026-04-25: Deferred protected button layout refreshes until combat ends so layout changes apply safely after combat.

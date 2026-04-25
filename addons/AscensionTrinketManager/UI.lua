@@ -175,6 +175,7 @@ function ATM:UpdateTrinketButtons()
     end
 
     local hideNoAction = ATM.db and ATM.db.hideNoActionTrinkets
+    local inCombat = InCombatLockdown()
     
     for i, btn in ipairs(ATM.trinketButtons) do
         local itemLink = GetInventoryItemLink("player", btn.slotID)
@@ -222,13 +223,30 @@ function ATM:UpdateTrinketButtons()
         end
 
         if shouldShow then
-            btn:Show()
+            if inCombat then
+                if not btn:IsShown() then
+                    ATM.pendingButtonRefresh = true
+                end
+            else
+                btn:Show()
+            end
         else
-            btn:Hide()
-            if btn.dropdown and btn.dropdown:IsShown() then
-                btn.dropdown:Hide()
+            if inCombat then
+                if btn:IsShown() then
+                    ATM.pendingButtonRefresh = true
+                end
+            else
+                btn:Hide()
+                if btn.dropdown and btn.dropdown:IsShown() then
+                    btn.dropdown:Hide()
+                end
             end
         end
+    end
+
+    if inCombat then
+        ATM.pendingButtonRefresh = true
+        return
     end
 
     ATM:UpdateLayout()
@@ -344,6 +362,11 @@ end
 -- Update layout based on orientation
 function ATM:UpdateLayout()
     if not ATM.trinketButtons then
+        return
+    end
+
+    if InCombatLockdown() then
+        ATM.pendingButtonRefresh = true
         return
     end
 

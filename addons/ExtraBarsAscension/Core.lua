@@ -433,6 +433,14 @@ EBA:SetScript("OnEvent", function(self, event, arg1)
             self.pendingProfileRefresh = nil
             self:OnProfileChanged()
         end
+
+        if self.pendingBarLayouts then
+            local pending = self.pendingBarLayouts
+            self.pendingBarLayouts = nil
+            for barIndex in pairs(pending) do
+                self:RefreshBarLayout(barIndex)
+            end
+        end
     end
 end)
 

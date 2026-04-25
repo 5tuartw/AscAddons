@@ -44,8 +44,15 @@ function APS:CreateOptionsPanel()
         APS:SetToggle("autoDisenchantRoll", button:GetChecked(), "Disenchant roll prompts")
     end)
 
+    local clickDeleteCheckbox = CreateFrame("CheckButton", "APS_ClickDeleteCheckbox", panel, "InterfaceOptionsCheckButtonTemplate")
+    clickDeleteCheckbox:SetPoint("TOPLEFT", disenchantCheckbox, "BOTTOMLEFT", 0, -8)
+    _G[clickDeleteCheckbox:GetName() .. "Text"]:SetText("Allow Ctrl+Alt+LeftClick to delete bag items")
+    clickDeleteCheckbox:SetScript("OnClick", function(button)
+        APS:SetToggle("ctrlAltClickDelete", button:GetChecked(), "Ctrl+Alt+LeftClick delete")
+    end)
+
     local destroyCheckbox = CreateFrame("CheckButton", "APS_DestroyCheckbox", panel, "InterfaceOptionsCheckButtonTemplate")
-    destroyCheckbox:SetPoint("TOPLEFT", disenchantCheckbox, "BOTTOMLEFT", 0, -8)
+    destroyCheckbox:SetPoint("TOPLEFT", clickDeleteCheckbox, "BOTTOMLEFT", 0, -8)
     _G[destroyCheckbox:GetName() .. "Text"]:SetText("Auto-confirm destroy item prompts")
     destroyCheckbox:SetScript("OnClick", function(button)
         APS:SetToggle("autoDestroyItems", button:GetChecked(), "Destroy item prompts")
@@ -82,7 +89,7 @@ function APS:CreateOptionsPanel()
     commands:SetPoint("TOPLEFT", warning, "BOTTOMLEFT", 0, -20)
     commands:SetWidth(560)
     commands:SetJustifyH("LEFT")
-    commands:SetText("Slash commands: /aps status, /aps loot on|off|toggle, /aps roll on|off|toggle, /aps disenchant on|off|toggle, /aps destroy on|off|toggle, /aps rare on|off|toggle, /aps appearance on|off|toggle, /aps abandon on|off|toggle")
+    commands:SetText("Slash commands: /aps status, /aps loot on|off|toggle, /aps roll on|off|toggle, /aps disenchant on|off|toggle, /aps clickdelete on|off|toggle, /aps destroy on|off|toggle, /aps rare on|off|toggle, /aps appearance on|off|toggle, /aps abandon on|off|toggle")
 
     InterfaceOptions_AddCategory(panel)
 
@@ -91,6 +98,7 @@ function APS:CreateOptionsPanel()
         lootCheckbox = lootCheckbox,
         rollCheckbox = rollCheckbox,
         disenchantCheckbox = disenchantCheckbox,
+        clickDeleteCheckbox = clickDeleteCheckbox,
         destroyCheckbox = destroyCheckbox,
         rareCheckbox = rareCheckbox,
         appearanceCheckbox = appearanceCheckbox,

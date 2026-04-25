@@ -1,9 +1,9 @@
-name: Release ExtraBarsAscension
+name: Release Ascension Prompt Squelcher
 
 "on":
   push:
     tags:
-      - 'extrabars-v*'
+      - 'aps-v*'
 
 permissions:
   contents: write
@@ -17,46 +17,46 @@ jobs:
 
       - name: Extract version from tag
         id: version
-        run: echo "VERSION=${GITHUB_REF#refs/tags/extrabars-v}" >> $GITHUB_OUTPUT
+        run: echo "VERSION=${GITHUB_REF#refs/tags/aps-v}" >> $GITHUB_OUTPUT
 
       - name: Package addon
         run: |
           mkdir -p release
-          cp -r addons/ExtraBarsAscension release/ExtraBarsAscension
+          cp -r addons/AscensionPromptSquelcher release/AscensionPromptSquelcher
           cd release
-          zip -r ExtraBarsAscension-${{ steps.version.outputs.VERSION }}.zip ExtraBarsAscension/
+          zip -r AscensionPromptSquelcher-${{ steps.version.outputs.VERSION }}.zip AscensionPromptSquelcher/
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
-          files: release/ExtraBarsAscension-${{ steps.version.outputs.VERSION }}.zip
-          name: ExtraBarsAscension v${{ steps.version.outputs.VERSION }}
+          files: release/AscensionPromptSquelcher-${{ steps.version.outputs.VERSION }}.zip
+          name: Ascension Prompt Squelcher v${{ steps.version.outputs.VERSION }}
           body: |
-            # ExtraBarsAscension v${{ steps.version.outputs.VERSION }}
+            # Ascension Prompt Squelcher v${{ steps.version.outputs.VERSION }}
 
-            Adds 3 configurable action bars to the default 3.3.5 UI without replacing your UI framework.
+            Auto-confirms selected loot, roll, deletion, and appearance prompts on Ascension.
 
             ## Installation
-            1. Download `ExtraBarsAscension-${{ steps.version.outputs.VERSION }}.zip`
+            1. Download `AscensionPromptSquelcher-${{ steps.version.outputs.VERSION }}.zip`
             2. Extract to `World of Warcraft/Interface/AddOns/`
             3. Restart WoW or type `/reload`
-            4. Type `/eba help` for command reference
+            4. Type `/aps` to configure
 
             ## Features
-            - Three extra bars with configurable button count and layout
-            - Optional stance-page suppression for claimed pages
-            - Per-bar size, spacing, visibility, alpha, hotkey text, and macro text controls
-            - Minimal standalone implementation with no external dependencies
+            - Auto-confirm bind-on-pickup loot prompts
+            - Auto-confirm bind-on-pickup and disenchant roll prompts
+            - Optional Ctrl+Alt+LeftClick bag-item deletion flow
+            - Auto-confirm destroy, rare-delete, appearance, and abandon-quest prompts
 
-            See [README](https://github.com/5tuartw/AscAddons/blob/main/addons/ExtraBarsAscension/README.md) for full documentation.
+            See [README](https://github.com/5tuartw/AscAddons/blob/main/addons/AscensionPromptSquelcher/README.md) for full documentation.
           draft: false
           prerelease: false
 
-      - name: Prune older ExtraBars releases
+      - name: Prune older APS releases
         uses: actions/github-script@v7
         with:
           script: |
-            const prefix = 'extrabars-v';
+            const prefix = 'aps-v';
             const currentTag = context.ref.replace('refs/tags/', '');
             const { owner, repo } = context.repo;
             const releases = await github.paginate(github.rest.repos.listReleases, {

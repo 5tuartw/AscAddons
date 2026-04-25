@@ -3,7 +3,7 @@ AscensionPromptSquelcher = AscensionPromptSquelcher or {}
 local APS = AscensionPromptSquelcher
 local addonFrame = CreateFrame("Frame")
 
-APS.version = "1.0.0"
+APS.version = "1.0.1"
 APS.defaults = {
     autoLootBind = true,
     autoLootRollBind = true,
@@ -12,10 +12,12 @@ APS.defaults = {
     autoDeleteRareItems = true,
     autoCollectAppearance = true,
     autoAbandonQuestPrompt = false,
+    ctrlAltClickDelete = false,
 }
 
 APS.appearanceHookInstalled = false
 APS.popupHookInstalled = false
+APS.modifiedClickHookInstalled = false
 APS.pendingDisenchantConfirm = 0
 
 local DISENCHANT_CONFIRM_TEXT_PATTERNS = {
@@ -282,6 +284,75 @@ function APS:ConfirmDelete(itemQuality)
     end
 end
 
+function APS:IsCtrlAltDeleteClick(mouseButton)
+    return mouseButton == "LeftButton" and IsControlKeyDown() and IsAltKeyDown() and not IsShiftKeyDown()
+end
+
+function APS:GetContainerButtonLocation(button)
+    if not button or type(button.GetID) ~= "function" then
+        return nil, nil
+    end
+
+    local slot = button:GetID()
+    local parent = button.GetParent and button:GetParent()
+    if not parent or type(parent.GetID) ~= "function" then
+        return nil, nil
+    end
+
+    local bag = parent:GetID()
+    if type(bag) ~= "number" or type(slot) ~= "number" then
+        return nil, nil
+    end
+
+    return bag, slot
+end
+
+function APS:DeleteContainerItem(bag, slot)
+    if type(bag) ~= "number" or type(slot) ~= "number" then
+        return false
+    end
+
+    local itemLink = GetContainerItemLink(bag, slot)
+    if not itemLink then
+        return false
+    end
+
+    ClearCursor()
+    PickupContainerItem(bag, slot)
+
+    if not (CursorHasItem and CursorHasItem()) then
+        return false
+    end
+
+    DeleteCursorItem()
+    return true
+end
+
+function APS:HandleContainerModifiedClick(button, mouseButton)
+    if not self.db or not self.db.ctrlAltClickDelete then
+        return
+    end
+
+    if not self:IsCtrlAltDeleteClick(mouseButton) then
+        return
+    end
+
+    local bag, slot = self:GetContainerButtonLocation(button)
+    self:DeleteContainerItem(bag, slot)
+end
+
+function APS:InstallModifiedClickHook()
+    if self.modifiedClickHookInstalled then
+        return
+    end
+
+    hooksecurefunc("ContainerFrameItemButton_OnModifiedClick", function(button, mouseButton)
+        APS:HandleContainerModifiedClick(button, mouseButton)
+    end)
+
+    self.modifiedClickHookInstalled = true
+end
+
 function APS:OpenOptions()
     if not self.optionsPanel then
         return
@@ -299,6 +370,7 @@ function APS:PrintStatus()
     self:Print("Bind-on-pickup loot: " .. self:GetStatusLine("autoLootBind"))
     self:Print("Bind-on-pickup roll prompts: " .. self:GetStatusLine("autoLootRollBind"))
     self:Print("Disenchant roll prompts: " .. self:GetStatusLine("autoDisenchantRoll"))
+    self:Print("Ctrl+Alt+LeftClick delete: " .. self:GetStatusLine("ctrlAltClickDelete"))
     self:Print("Destroy item prompts: " .. self:GetStatusLine("autoDestroyItems"))
     self:Print("Rare item delete prompts: " .. self:GetStatusLine("autoDeleteRareItems"))
     self:Print("Appearance collection prompts: " .. self:GetStatusLine("autoCollectAppearance"))
@@ -332,6 +404,7 @@ function APS:HandleSlashCommand(message)
         loot = { key = "autoLootBind", label = "Bind-on-pickup loot" },
         roll = { key = "autoLootRollBind", label = "Bind-on-pickup roll prompts" },
         disenchant = { key = "autoDisenchantRoll", label = "Disenchant roll prompts" },
+        clickdelete = { key = "ctrlAltClickDelete", label = "Ctrl+Alt+LeftClick delete" },
         destroy = { key = "autoDestroyItems", label = "Destroy item prompts" },
         rare = { key = "autoDeleteRareItems", label = "Rare item delete prompts" },
         appearance = { key = "autoCollectAppearance", label = "Appearance collection prompts" },
@@ -340,7 +413,7 @@ function APS:HandleSlashCommand(message)
 
     local entry = mapping[command]
     if not entry then
-        self:Print("Usage: /aps status | /aps options | /aps loot on|off|toggle | /aps roll on|off|toggle | /aps disenchant on|off|toggle | /aps destroy on|off|toggle | /aps rare on|off|toggle | /aps appearance on|off|toggle | /aps abandon on|off|toggle")
+        self:Print("Usage: /aps status | /aps options | /aps loot on|off|toggle | /aps roll on|off|toggle | /aps disenchant on|off|toggle | /aps clickdelete on|off|toggle | /aps destroy on|off|toggle | /aps rare on|off|toggle | /aps appearance on|off|toggle | /aps abandon on|off|toggle")
         return
     end
 
@@ -363,6 +436,9 @@ function APS:RefreshOptions()
         end
         if self.optionsControls.disenchantCheckbox then
             self.optionsControls.disenchantCheckbox:SetChecked(self.db.autoDisenchantRoll)
+        end
+        if self.optionsControls.clickDeleteCheckbox then
+            self.optionsControls.clickDeleteCheckbox:SetChecked(self.db.ctrlAltClickDelete)
         end
         if self.optionsControls.destroyCheckbox then
             self.optionsControls.destroyCheckbox:SetChecked(self.db.autoDestroyItems)
@@ -388,6 +464,7 @@ function APS:OnEvent(event, ...)
 
         self:InitializeDB()
         self:InstallPopupHook()
+        self:InstallModifiedClickHook()
         self:CreateOptionsPanel()
         self:RefreshOptions()
         return

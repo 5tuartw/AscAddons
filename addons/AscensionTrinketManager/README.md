@@ -22,7 +22,7 @@ A lightweight WoW addon for Ascension (3.3.5 WotLK) that provides clickable trin
 
 ## Installation
 
-1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=atm&expanded=true) (click the zip file in the **Assets** section)
+1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=atm-v&expanded=true) (click the zip file in the **Assets** section)
 2. Extract to `World of Warcraft/Interface/AddOns/`
 3. Restart WoW or `/reload`
 4. Type `/atm` to configure
@@ -54,13 +54,14 @@ Access via `/atm` or ESC → Interface → Addons → Ascension Trinket Manager:
 
 ## Version
 
-1.0.0 - Initial release
+1.1.2 - Deferred combat-safe visibility and layout refresh updates
 
 ## Short Changelog
 
 - 2026-04-18: Added optional mount equipment set fallback when Carrot is not in bags.
 - 2026-04-18: Added safer restore flow after dismount (restore previous set when available, otherwise restore trinket from bags).
 - 2026-04-18: Added option to hide trinket buttons with no use action and compact layout for visible buttons.
+- 2026-04-25: Deferred button visibility and layout changes until combat ends, avoiding protected-frame updates during combat.
 
 ## License
 

@@ -3,7 +3,7 @@
 
 -- Create addon namespace
 ATM = {}
-ATM.version = "1.1.0"
+ATM.version = "1.1.2"
 
 -- Trinket slot IDs
 ATM.TRINKET_SLOTS = {13, 14}
@@ -12,6 +12,8 @@ ATM.CARROT_ITEM_ID = 339075  -- Stick on a Carrot
 -- Pending swap for retry logic
 ATM.pendingSwap = nil
 ATM.retryTimer = nil
+ATM.pendingContainerVisibility = false
+ATM.pendingButtonRefresh = false
 
 -- Frame for event handling
 local frame = CreateFrame("Frame")
@@ -95,6 +97,25 @@ function ATM:OnInitialize()
 end
 
 -- Login handler
+function ATM:ApplyContainerVisibility()
+    if not ATM.container then
+        return
+    end
+
+    if InCombatLockdown() then
+        ATM.pendingContainerVisibility = true
+        return
+    end
+
+    if ATM.db.showButtons then
+        ATM.container:Show()
+    else
+        ATM.container:Hide()
+    end
+
+    ATM.pendingContainerVisibility = false
+end
+
 function ATM:OnLogin()
     -- Create options panel
     ATM:CreateOptionsPanel()
@@ -108,12 +129,8 @@ function ATM:OnLogin()
         ATM.container:SetPoint(ATM.db.position.point, UIParent, ATM.db.position.relativePoint, ATM.db.position.xOfs, ATM.db.position.yOfs)
     end
     
-    -- Show/hide based on settings
-    if ATM.db.showButtons then
-        ATM.container:Show()
-    else
-        ATM.container:Hide()
-    end
+    -- Show/hide based on settings (deferred if in combat)
+    ATM:ApplyContainerVisibility()
     
     -- Initial update
     ATM:UpdateTrinketButtons()
@@ -492,6 +509,15 @@ function ATM:OnLeaveCombat()
         -- Try immediately
         ATM:RetryPendingSwap()
     end
+
+    if ATM.pendingContainerVisibility then
+        ATM:ApplyContainerVisibility()
+    end
+
+    if ATM.pendingButtonRefresh then
+        ATM.pendingButtonRefresh = false
+        ATM:UpdateTrinketButtons()
+    end
 end
 
 -- Auto-equip Stick on a Carrot when mounting
@@ -649,11 +675,11 @@ function ATM:SlashCommand(msg)
     
     if msg == "show" then
         ATM.db.showButtons = true
-        ATM.container:Show()
+        ATM:ApplyContainerVisibility()
         DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00[ATM]|r Buttons shown.")
     elseif msg == "hide" then
         ATM.db.showButtons = false
-        ATM.container:Hide()
+        ATM:ApplyContainerVisibility()
         DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00[ATM]|r Buttons hidden.")
     elseif msg == "" or msg == "config" or msg == "options" then
         -- Open options panel
@@ -725,11 +751,7 @@ function ATM:ResetToDefaults()
     ATM:UpdateLayout()
     ATM:UpdateTrinketButtons()
     
-    if ATM.db.showButtons then
-        ATM.container:Show()
-    else
-        ATM.container:Hide()
-    end
+    ATM:ApplyContainerVisibility()
     
     DEFAULT_CHAT_FRAME:AddMessage("|cff00ff00[ATM]|r Settings reset to defaults.")
 end

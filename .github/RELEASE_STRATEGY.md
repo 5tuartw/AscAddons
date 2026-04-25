@@ -14,6 +14,7 @@ This repository contains multiple addons with independent release tags and workf
 Use addon-specific tags:
 
 - `avh-v<version>` for AscensionVanityHelper
+- `aps-v<version>` for AscensionPromptSquelcher
 - `atm-v<version>` for AscensionTrinketManager
 - `autocollect-v<version>` for AutoCollect
 - `mestats-v<version>` for MEStats
@@ -23,6 +24,7 @@ Use addon-specific tags:
 Examples:
 
 - `questkeys-v1.1.0`
+- `aps-v1.0.1`
 - `extrabars-v0.4.2`
 
 ## Minimal Release Checklist
@@ -39,3 +41,4 @@ Examples:
 - Legacy `addon_updater.py` is deprecated; use `addon_manager` for update checks.
 - Do not mix repository reorganization moves with a release tag in the same commit.
 - Keep release commits small and addon-scoped when possible.
+- Addon-specific workflows prune older releases in the same tag family after publishing, so the Releases page keeps only the latest published release per addon.

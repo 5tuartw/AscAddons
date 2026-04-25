@@ -23,11 +23,7 @@ function ATM:CreateOptionsPanel()
     showButtonsCheck:SetChecked(ATM.db.showButtons)
     showButtonsCheck:SetScript("OnClick", function(self)
         ATM.db.showButtons = self:GetChecked()
-        if ATM.db.showButtons then
-            ATM.container:Show()
-        else
-            ATM.container:Hide()
-        end
+        ATM:ApplyContainerVisibility()
     end)
 
     local hideNoActionCheck = CreateFrame("CheckButton", "ATM_HideNoActionCheck", panel, "InterfaceOptionsCheckButtonTemplate")

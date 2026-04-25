@@ -51,6 +51,32 @@ jobs:
             
             Type `/qk help` for command list or `/qk toggle` to enable/disable.
             
-            See [README](https://github.com/5tuartw/WowAddons/blob/main/addons/QuestKeys/README.md) for full documentation.
+            See [README](https://github.com/5tuartw/AscAddons/blob/main/addons/QuestKeys/README.md) for full documentation.
           draft: false
           prerelease: false
+
+      - name: Prune older QuestKeys releases
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const prefix = 'questkeys-v';
+            const currentTag = context.ref.replace('refs/tags/', '');
+            const { owner, repo } = context.repo;
+            const releases = await github.paginate(github.rest.repos.listReleases, {
+              owner,
+              repo,
+              per_page: 100,
+            });
+
+            for (const release of releases) {
+              if (release.tag_name === currentTag || !release.tag_name.startsWith(prefix)) {
+                continue;
+              }
+
+              core.info(`Deleting older release ${release.tag_name}`);
+              await github.rest.repos.deleteRelease({
+                owner,
+                repo,
+                release_id: release.id,
+              });
+            }
