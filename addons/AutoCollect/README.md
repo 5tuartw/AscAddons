@@ -20,7 +20,7 @@ Auto-collect transmog appearances with smart filtering and visual indicators for
 
 ## Installation
 
-1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=autocollect-v&expanded=true) (click the zip file in the **Assets** section)
+1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases/tag/autocollect-v1.0.1) (click the zip file in the **Assets** section)
 2. Extract to `World of Warcraft/Interface/AddOns/`
 3. Restart WoW or type `/reload`
 4. Drag the button to your preferred location

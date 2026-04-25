@@ -13,7 +13,7 @@ Keyboard-first quest and gossip flow.
 
 - Addon: [addons/QuestKeys](addons/QuestKeys)
 - Docs: [addons/QuestKeys/README.md](addons/QuestKeys/README.md)
-- Releases: <https://github.com/5tuartw/AscAddons/releases?q=questkeys-v&expanded=true>
+- Releases: <https://github.com/5tuartw/AscAddons/releases/tag/questkeys-v1.0.2>
 
 ### ExtraBarsAscension
 Three extra configurable action bars using default UI pages.

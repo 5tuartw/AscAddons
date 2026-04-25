@@ -86,7 +86,7 @@ Most changes require `/reload` to apply. Visibility and alpha changes apply imme
 
 ## Installation
 
-1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=extrabars-v&expanded=true) (click the zip file in the **Assets** section)
+1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases/tag/extrabars-v2.2.1) (click the zip file in the **Assets** section)
 2. Extract to `World of Warcraft/Interface/AddOns/`
 3. Restart WoW or `/reload`
 4. Type `/eba help` for command reference

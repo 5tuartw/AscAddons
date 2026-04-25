@@ -12,7 +12,7 @@ Small standalone addon for Ascension's 3.3.5 client that auto-confirms a few hig
 
 ## Installation
 
-1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases?q=aps-v&expanded=true) (click the zip file in the **Assets** section)
+1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases/tag/aps-v1.0.1) (click the zip file in the **Assets** section)
 2. Extract to `World of Warcraft/Interface/AddOns/`
 3. Restart WoW or `/reload`
 4. Type `/aps` to configure
