@@ -5,14 +5,14 @@ Small standalone addon for Ascension's 3.3.5 client that auto-confirms a few hig
 - Bind-on-pickup loot confirmation
 - Bind-on-pickup loot roll confirmation
 - Disenchant loot roll confirmation
-- Optional Ctrl+Alt+LeftClick bag-item deletion
+- Optional Shift+Alt+RightClick bag-item deletion
 - Normal destroy-item confirmation
 - Rare-or-better item deletion confirmation
 - Appearance collection confirmation
 
 ## Installation
 
-1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases/tag/aps-v1.0.1) (click the zip file in the **Assets** section)
+1. Download the [latest release](https://github.com/5tuartw/AscAddons/releases/tag/aps-v1.0.2) (click the zip file in the **Assets** section)
 2. Extract to `World of Warcraft/Interface/AddOns/`
 3. Restart WoW or `/reload`
 4. Type `/aps` to configure
@@ -33,10 +33,13 @@ Small standalone addon for Ascension's 3.3.5 client that auto-confirms a few hig
 ## Notes
 
 - Rare-item deletion intentionally bypasses the extra safety prompt. Leave that toggle off if you want manual confirmation for blue, purple, or better items.
-- Ctrl+Alt+LeftClick only starts the delete flow from bag slots. Whether the client still shows a confirmation depends on your destroy / rare-delete prompt toggles.
+- Shift+Alt+RightClick only starts the delete flow from bag slots. Whether the client still shows a confirmation depends on your destroy / rare-delete prompt toggles.
 - This overlaps with YATP's quick-confirm module for bind-on-pickup loot. If you keep both addons enabled, disable one of those two BoP features.
 
 ## Short Changelog
+
+### 1.0.2
+- Changed bag-item delete shortcut from Ctrl+Alt+LeftClick to Shift+Alt+RightClick (existing toggle setting is migrated automatically).
 
 ### 1.0.1
 - Initial tagged release of Ascension Prompt Squelcher
@@ -46,3 +49,4 @@ Small standalone addon for Ascension's 3.3.5 client that auto-confirms a few hig
 - 2026-04-18: Added matching options checkbox and status output for abandon prompt handling.
 - 2026-04-18: Kept existing prompt toggles unchanged for loot, rolls, disenchant, destroy, and appearance.
 - 2026-04-25: Added optional Ctrl+Alt+LeftClick bag-item deletion (`/aps clickdelete on|off|toggle`).
+- 2026-04-27: Changed bag-item delete shortcut to Shift+Alt+RightClick (existing toggle setting is migrated automatically).

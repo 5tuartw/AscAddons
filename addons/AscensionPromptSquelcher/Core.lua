@@ -3,7 +3,7 @@ AscensionPromptSquelcher = AscensionPromptSquelcher or {}
 local APS = AscensionPromptSquelcher
 local addonFrame = CreateFrame("Frame")
 
-APS.version = "1.0.1"
+APS.version = "1.0.2"
 APS.defaults = {
     autoLootBind = true,
     autoLootRollBind = true,
@@ -12,7 +12,7 @@ APS.defaults = {
     autoDeleteRareItems = true,
     autoCollectAppearance = true,
     autoAbandonQuestPrompt = false,
-    ctrlAltClickDelete = false,
+    shiftAltClickDelete = false,
 }
 
 APS.appearanceHookInstalled = false
@@ -53,6 +53,13 @@ function APS:InitializeDB()
     end
 
     self.db = AscensionPromptSquelcherDB
+
+    -- Migrate legacy Ctrl+Alt+LeftClick setting to Shift+Alt+RightClick
+    if self.db.ctrlAltClickDelete ~= nil and self.db.shiftAltClickDelete == nil then
+        self.db.shiftAltClickDelete = self.db.ctrlAltClickDelete
+    end
+    self.db.ctrlAltClickDelete = nil
+
     CopyDefaults(self.defaults, self.db)
 end
 
@@ -284,8 +291,8 @@ function APS:ConfirmDelete(itemQuality)
     end
 end
 
-function APS:IsCtrlAltDeleteClick(mouseButton)
-    return mouseButton == "LeftButton" and IsControlKeyDown() and IsAltKeyDown() and not IsShiftKeyDown()
+function APS:IsShiftAltDeleteClick(mouseButton)
+    return mouseButton == "RightButton" and IsShiftKeyDown() and IsAltKeyDown() and not IsControlKeyDown()
 end
 
 function APS:GetContainerButtonLocation(button)
@@ -329,11 +336,11 @@ function APS:DeleteContainerItem(bag, slot)
 end
 
 function APS:HandleContainerModifiedClick(button, mouseButton)
-    if not self.db or not self.db.ctrlAltClickDelete then
+    if not self.db or not self.db.shiftAltClickDelete then
         return
     end
 
-    if not self:IsCtrlAltDeleteClick(mouseButton) then
+    if not self:IsShiftAltDeleteClick(mouseButton) then
         return
     end
 
@@ -370,7 +377,7 @@ function APS:PrintStatus()
     self:Print("Bind-on-pickup loot: " .. self:GetStatusLine("autoLootBind"))
     self:Print("Bind-on-pickup roll prompts: " .. self:GetStatusLine("autoLootRollBind"))
     self:Print("Disenchant roll prompts: " .. self:GetStatusLine("autoDisenchantRoll"))
-    self:Print("Ctrl+Alt+LeftClick delete: " .. self:GetStatusLine("ctrlAltClickDelete"))
+    self:Print("Shift+Alt+RightClick delete: " .. self:GetStatusLine("shiftAltClickDelete"))
     self:Print("Destroy item prompts: " .. self:GetStatusLine("autoDestroyItems"))
     self:Print("Rare item delete prompts: " .. self:GetStatusLine("autoDeleteRareItems"))
     self:Print("Appearance collection prompts: " .. self:GetStatusLine("autoCollectAppearance"))
@@ -404,7 +411,7 @@ function APS:HandleSlashCommand(message)
         loot = { key = "autoLootBind", label = "Bind-on-pickup loot" },
         roll = { key = "autoLootRollBind", label = "Bind-on-pickup roll prompts" },
         disenchant = { key = "autoDisenchantRoll", label = "Disenchant roll prompts" },
-        clickdelete = { key = "ctrlAltClickDelete", label = "Ctrl+Alt+LeftClick delete" },
+        clickdelete = { key = "shiftAltClickDelete", label = "Shift+Alt+RightClick delete" },
         destroy = { key = "autoDestroyItems", label = "Destroy item prompts" },
         rare = { key = "autoDeleteRareItems", label = "Rare item delete prompts" },
         appearance = { key = "autoCollectAppearance", label = "Appearance collection prompts" },
@@ -438,7 +445,7 @@ function APS:RefreshOptions()
             self.optionsControls.disenchantCheckbox:SetChecked(self.db.autoDisenchantRoll)
         end
         if self.optionsControls.clickDeleteCheckbox then
-            self.optionsControls.clickDeleteCheckbox:SetChecked(self.db.ctrlAltClickDelete)
+            self.optionsControls.clickDeleteCheckbox:SetChecked(self.db.shiftAltClickDelete)
         end
         if self.optionsControls.destroyCheckbox then
             self.optionsControls.destroyCheckbox:SetChecked(self.db.autoDestroyItems)

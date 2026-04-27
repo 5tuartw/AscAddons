@@ -2,7 +2,7 @@
 ## Title: Ascension Prompt Squelcher
 ## Notes: Auto-confirms selected looting and item deletion prompts on Ascension
 ## Author: GitHub Copilot
-## Version: 1.0.1
+## Version: 1.0.2
 ## SavedVariables: AscensionPromptSquelcherDB
 ## X-Category: Interface Enhancements
 

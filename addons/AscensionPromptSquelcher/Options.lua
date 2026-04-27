@@ -46,9 +46,9 @@ function APS:CreateOptionsPanel()
 
     local clickDeleteCheckbox = CreateFrame("CheckButton", "APS_ClickDeleteCheckbox", panel, "InterfaceOptionsCheckButtonTemplate")
     clickDeleteCheckbox:SetPoint("TOPLEFT", disenchantCheckbox, "BOTTOMLEFT", 0, -8)
-    _G[clickDeleteCheckbox:GetName() .. "Text"]:SetText("Allow Ctrl+Alt+LeftClick to delete bag items")
+    _G[clickDeleteCheckbox:GetName() .. "Text"]:SetText("Allow Shift+Alt+RightClick to delete bag items")
     clickDeleteCheckbox:SetScript("OnClick", function(button)
-        APS:SetToggle("ctrlAltClickDelete", button:GetChecked(), "Ctrl+Alt+LeftClick delete")
+        APS:SetToggle("shiftAltClickDelete", button:GetChecked(), "Shift+Alt+RightClick delete")
     end)
 
     local destroyCheckbox = CreateFrame("CheckButton", "APS_DestroyCheckbox", panel, "InterfaceOptionsCheckButtonTemplate")
